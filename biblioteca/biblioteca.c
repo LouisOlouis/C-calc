@@ -1,47 +1,162 @@
 #include <stdio.h>
-
+#include <stdbool.h>
+#include <string.h>
 typedef struct {
     int id;
     char titulo[100];
     char autor[100];
     int ano;
-    int emprestado;
+    bool emprestado;
 } Livro;
+
+void clean_stdin() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+    return;
+}
+
+int buscaid(FILE *arquivo){
+    Livro l;
+    int id = 1;
+
+    while (fread(&l, sizeof(Livro), 1, arquivo) == 1) {
+        id ++;
+    }
+    return id;
+}
 
 void cadastrabook() {
     printf("Cadastramento de livros\n\n");
 
-    // char titulo[100];
-    // char autor[100];
-    // int ano
-
-    Livro l
-    printf("Digite o titulo do livro:   ")
+    Livro l;
+    printf("Digite o titulo do livro:   ");
     fgets(l.titulo, sizeof(l.titulo), stdin);
+    l.titulo[strcspn(l.titulo, "\n")] = '\0';
 
-    printf("Digite o autor do livro:   ")
+    printf("Digite o autor do livro:   ");
     fgets(l.autor, sizeof(l.autor), stdin);
+    l.autor[strcspn(l.autor, "\n")] = '\0';
 
 
+    printf("Digite o ano do livro:   ");
+    scanf("%d", &l.ano);
+    clean_stdin();
 
-    FILE *livros = fopen("arquivos/livros.dat", "wb");
-    if (arquivo == NULL) {
-        return 1;
+    FILE *livros = fopen("livros.dat", "rb");
+
+    if (livros != NULL) {
+        l.id = buscaid(livros);
+        fclose(livros);
+    } else {
+        l.id = 1;
     }
 
+    l.emprestado = false;
+
+    livros = fopen("livros.dat", "ab");
+
+    fwrite(&l, sizeof(Livro), 1, livros);
+    fclose(livros);
+
+    printf("O livro foi cadastrado\n");
+    printf("O id do seu livro e:    %d\n", l.id);
     return;
 }
 
-void listabook(){
-    return;
+void listabook() {
+    int bookid;
+    printf("Digite o id do livro:   ");
+    scanf("%d", &bookid);
+    clean_stdin();
+
+    Livro l;
+    bool encontrado = false;
+
+    FILE *arquivo = fopen("livros.dat", "rb");
+    if (!arquivo) {
+        printf("Nenhum livro cadastrado\n");
+        return;
+    }
+
+    while (fread(&l, sizeof(Livro), 1, arquivo) == 1) {
+        if (l.id == bookid) {
+            printf("%s - %s - %d\n", l.titulo, l.autor, l.ano);
+            encontrado = true;
+            break;
+        }
+    }
+
+    if (!encontrado) {
+        printf("o livro nao existe\n");
+    }
+
+    fclose(arquivo);
 }
 
 void editabook(){
-    return;
+    int bookid;
+    printf("Digite o id do livro:   ");
+    scanf("%d", &bookid);
+    clean_stdin();
+
+    Livro l;
+
+    FILE *arquivo = fopen("livros.dat", "rb+");
+
+    if (!arquivo) {
+        printf("Nenhum livro cadastrado");
+        return;
+    }
+
+    while (fread(&l, sizeof(Livro), 1, arquivo) == 1) {
+        if(l.id == bookid){
+            printf("Digite o titulo do livro:   ");
+            fgets(l.titulo, sizeof(l.titulo), stdin);
+            l.titulo[strcspn(l.titulo, "\n")] = '\0';
+
+            printf("Digite o autor do livro:   ");
+            fgets(l.autor, sizeof(l.autor), stdin);
+            l.autor[strcspn(l.autor, "\n")] = '\0';
+
+            printf("Digite o ano do livro:   ");
+            scanf("%d", &l.ano);
+            clean_stdin();
+
+
+            if (fseek(arquivo, -(long)sizeof(Livro), SEEK_CUR) != 0) {
+                printf("Erro ao posicionar no arquivo\n");
+                fclose(arquivo);
+                return;
+            }
+            if (fwrite(&l, sizeof(Livro), 1, arquivo) != 1) {
+                printf("Erro ao salvar alterações\n");
+                fclose(arquivo);
+                return;
+            }
+            fclose(arquivo);
+
+            printf("O livro foi editado\n");
+            return;
+        }
+    }
+    printf("o livro nao existe\n");
+    fclose(arquivo);
 }
 
 void emprestabook(){
-    return;
+int bookid;
+    printf("Digite o id do livro:   ");
+    scanf("%d", &bookid);
+    clean_stdin();
+
+    Livro l;
+
+    FILE *arquivo = fopen("livros.dat", "rb+");
+
+    if (!arquivo) {
+        printf("Nenhum livro cadastrado");
+        return;
+    }
 }
 
 void devolvebook(){
@@ -60,6 +175,8 @@ int main() {
                 "5 - Devolver livro\n"
                 "6 - Sair\n");
         scanf("%d", &opcao);
+        clean_stdin();
+
         switch(opcao){
             case 1:
                 cadastrabook();
@@ -68,10 +185,10 @@ int main() {
                 listabook();
                 break;
             case 3:
-                buscabook();
+                editabook();
                 break;
             case 4:
-                emprestabook():
+                emprestabook();
                 break;
             case 5:
                 devolvebook();
@@ -85,5 +202,5 @@ int main() {
                 break;
         }
     }
-    return 0
+    return 0;
 }
