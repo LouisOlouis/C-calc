@@ -157,10 +157,74 @@ int bookid;
         printf("Nenhum livro cadastrado");
         return;
     }
+    while (fread(&l, sizeof(Livro), 1, arquivo) == 1) {
+        if(l.id == bookid){
+            if(l.emprestado == true){
+                printf("Esse livro ja foi emprestado para outra pessoa\n");
+                return;
+            }
+            l.emprestado = true;
+
+            if (fseek(arquivo, -(long)sizeof(Livro), SEEK_CUR) != 0) {
+                printf("Erro ao posicionar no arquivo\n");
+                fclose(arquivo);
+                return;
+            }
+            if (fwrite(&l, sizeof(Livro), 1, arquivo) != 1) {
+                printf("Erro ao salvar alterações\n");
+                fclose(arquivo);
+                return;
+            }
+            fclose(arquivo);
+
+            printf("O livro foi emprestado\n");
+            return;
+        }
+    }
+    printf("o livro nao existe\n");
+    fclose(arquivo);
 }
 
 void devolvebook(){
-    return;
+int bookid;
+    printf("Digite o id do livro:   ");
+    scanf("%d", &bookid);
+    clean_stdin();
+
+    Livro l;
+
+    FILE *arquivo = fopen("livros.dat", "rb+");
+
+    if (!arquivo) {
+        printf("Nenhum livro cadastrado");
+        return;
+    }
+    while (fread(&l, sizeof(Livro), 1, arquivo) == 1) {
+        if(l.id == bookid){
+            if(l.emprestado == false){
+                printf("Esse livro ainda nao foi emprestado\n");
+                return;
+            }
+            l.emprestado = false;
+
+            if (fseek(arquivo, -(long)sizeof(Livro), SEEK_CUR) != 0) {
+                printf("Erro ao posicionar no arquivo\n");
+                fclose(arquivo);
+                return;
+            }
+            if (fwrite(&l, sizeof(Livro), 1, arquivo) != 1) {
+                printf("Erro ao salvar alterações\n");
+                fclose(arquivo);
+                return;
+            }
+            fclose(arquivo);
+
+            printf("O livro foi devolvido\n");
+            return;
+        }
+    }
+    printf("o livro nao existe\n");
+    fclose(arquivo);
 }
 
 int main() {
