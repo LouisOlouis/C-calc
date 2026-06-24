@@ -2,6 +2,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
+
+bool acabou = false;
 
 char eh_operador(char c) {
     switch (c) {
@@ -15,40 +18,80 @@ char eh_operador(char c) {
 }
 
 typedef struct Separator_returns {
-    char buffer;
+    int number;
     int position;
 } separator_returns;
 
+separator_returns res;
+
+
 separator_returns separator(char s[100], int pos){
-    separator_returns res;
+    
+    char buffer[100] = "";
+    int j = 0;
 
     #define p res.position
 
-    for (p = pos; s[p] != '\0'; p++) {
+    for (p = pos; s[p] != '\n'; p++) {
         if (isdigit(s[p])) {
-            strcat(res.buffer, s[p]);
+            buffer[j++] = s[p];
         } else if (eh_operador(s[p])) {
+            buffer[j] = '\0';
+            res.number = atoi(buffer);
             return res;
         } 
         // else if (s[*p] == '!'){
         //     return;
         // }
     }
+    p = 0;
+    buffer[j] = '\0';
+    res.number = atoi(buffer);
+    acabou = true;
+    return res;
 }
 
+int sum(int n1, int n2){
+    int buffer = n1+n2;
+    return buffer;
+}
 
-int main(int argc, char const *argv[])
+int sub(int n1, int n2){
+    int buffer = n1-n2;
+    return buffer;
+}
+
+int main()
 {
-    if(argc > 1){
-        return 0;
-    }
 
     char s[100];
 
     fgets(s, sizeof(s), stdin);
-    s[strcspn(s, "\n")] = '\0';
 
-    separator_returns res = separator(s, 0);
+    separator_returns guarda_separador;
+    guarda_separador = separator(s, 0);
+    int result = guarda_separador.number; 
+
+    while(!acabou){
+        guarda_separador = separator(s, guarda_separador.position + 1);
+        //operation
+        printf("%c\n", s[guarda_separador.position]);
+        switch(s[guarda_separador.position]) {
+            case '+': 
+                puts("Entrou");
+                result = sum(result, guarda_separador.number);
+                break;
+            case '-':
+                result = sub(result, guarda_separador.number);
+                break;
+            case '*':
+            case '/': 
+        case '%': case '=': case '<': case '>': 
+        case '&': case '|':
+        }
+    }
+
+    printf("Resultado:  %d\n", result);
 
     return 0;
 }
