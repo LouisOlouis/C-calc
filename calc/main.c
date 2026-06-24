@@ -40,11 +40,7 @@ separator_returns separator(char s[100], int pos){
             res.number = atoi(buffer);
             return res;
         } 
-        // else if (s[*p] == '!'){
-        //     return;
-        // }
     }
-    p = 0;
     buffer[j] = '\0';
     res.number = atoi(buffer);
     acabou = true;
