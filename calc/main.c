@@ -66,15 +66,15 @@ int main()
 
     separator_returns guarda_separador;
     guarda_separador = separator(s, 0);
-    int result = guarda_separador.number; 
+    int result = guarda_separador.number;
+    char operador;
 
     while(!acabou){
+        operador = s[guarda_separador.position];
         guarda_separador = separator(s, guarda_separador.position + 1);
-        //operation
-        printf("%c\n", s[guarda_separador.position]);
-        switch(s[guarda_separador.position]) {
-            case '+': 
-                puts("Entrou");
+
+        switch(operador) {
+            case '+':
                 result = sum(result, guarda_separador.number);
                 break;
             case '-':
