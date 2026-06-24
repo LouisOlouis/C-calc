@@ -57,9 +57,24 @@ int sub(int n1, int n2){
     return buffer;
 }
 
-int main()
-{
+int mult(int n1, int n2){
+    int buffer = n1*n2;
+    return buffer;
+}
 
+int divi(int n1, int n2){
+    if(n2 == 0) return 0;
+    int buffer = n1/n2;
+    return buffer;
+}
+
+int modu(int n1, int n2){
+    if(n2 == 0) return 0;
+    int buffer = n1%n2;
+    return buffer;
+}
+
+int main() {
     char s[100];
 
     fgets(s, sizeof(s), stdin);
@@ -81,9 +96,16 @@ int main()
                 result = sub(result, guarda_separador.number);
                 break;
             case '*':
-            case '/': 
-        case '%': case '=': case '<': case '>': 
-        case '&': case '|':
+                result = mult(result, guarda_separador.number);
+                break;
+            case '/':
+                result = divi(result, guarda_separador.number);
+                break;
+            case '%':
+                result = modu(result, guarda_separador.number);
+                break;
+            default:
+                break;
         }
     }
 
