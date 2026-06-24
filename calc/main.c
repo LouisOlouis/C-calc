@@ -74,11 +74,7 @@ int modu(int n1, int n2){
     return buffer;
 }
 
-int main() {
-    char s[100];
-
-    fgets(s, sizeof(s), stdin);
-
+int interpretador(){
     separator_returns guarda_separador;
     guarda_separador = separator(s, 0);
     int result = guarda_separador.number;
@@ -109,6 +105,15 @@ int main() {
         }
     }
 
+    return result;
+}
+
+int main() {
+    char s[100];
+
+    fgets(s, sizeof(s), stdin);
+
+    int result = interpretador();
     printf("Resultado:  %d\n", result);
 
     return 0;
