@@ -134,7 +134,7 @@ void substituir_na_memoria(char *str, int posicao, int tamanho_antigo, const cha
     memcpy(ponto_insercao, texto_novo, tamanho_novo);
 }
 
-char *interpretador(char s[100]){
+void interpretador(char *s){
     int i = 0;
     int last_operator_pos = 0;
 
@@ -176,17 +176,15 @@ char *interpretador(char s[100]){
             }
         }
     }
-    
-    return s;
 }
 
-int main() {
+int main(void) {
     char s[100];
 
     fgets(s, sizeof(s), stdin);
 
-    int result = operador(interpretador(s));
-    printf("Resultado:  %d\n", result);
+    interpretador(s);
+    printf("Resultado:  %d\n",operador(s));
 
     return 0;
 }
