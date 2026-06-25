@@ -108,8 +108,32 @@ int operador(char s[100]){
     return result;
 }
 
+void substituir_na_memoria(char *str, int posicao, int tamanho_antigo, const char *texto_novo) {
+    int tamanho_str = strlen(str);
 
-int interpretador(char s[100]){
+    if (posicao < 0 || posicao > tamanho_str)
+        return;
+
+    if (posicao + tamanho_antigo > tamanho_str)
+        return;
+
+    int tamanho_novo = strlen(texto_novo);
+    
+    // Ponteiro para onde a alteração vai começar
+    char *ponto_insercao = str + posicao;
+    
+    // Ponteiro para o restante do texto que precisa ser movido
+    char *resto_texto = ponto_insercao + tamanho_antigo;
+    
+    // Desloca o "resto do texto" para trás ou para frente usando memmove
+    // strlen(resto_texto) + 1 garante que o caractere '\0' também seja movido
+    memmove(ponto_insercao + tamanho_novo, resto_texto, strlen(resto_texto) + 1);
+    
+    // Copia o novo texto (menor) para o espaço reservado
+    memcpy(ponto_insercao, texto_novo, tamanho_novo);
+}
+
+char *interpretador(char s[100]){
     int i = 0;
     int last_operator_pos = 0;
 
