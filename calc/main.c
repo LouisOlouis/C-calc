@@ -142,28 +142,42 @@ char *interpretador(char s[100]){
     int semi_i = 0;
     char semi_operation[100];
 
-    for(i = 0; s[i] != '\n'; i++) {
+    bool estouro_s = false;
+
+    for(i = 0; s[i] != '\0'; i++) {
         if (eh_operador(s[i])) {
             if(!start_semi){
                 if(s[i] == '*' || s[i] == '/') {
                     start_semi = true;
-                    i = last_operator_pos;
+                    semi_operation[0] = '\0';
+                    i = last_operator_pos + 1;
                 } else {last_operator_pos = i;};
             } else {
-                if(s[i] != '*' || s[i] != '/') {
+                if((s[i] != '*' && s[i] != '/') || estouro_s) {
                     start_semi = false;
-                    int semi_operation_operated = operador(semi_operation);
-                    fseek()
+                    semi_operation[semi_i] = '\0';
+                    int buffer_semi_operation_operated = operador(semi_operation);
+                    semi_i = 0;
+                    estouro_s = false;
+                    char semi_operation_operated[20];
+                    snprintf(semi_operation_operated, sizeof(semi_operation_operated), "%d", buffer_semi_operation_operated);
+                    substituir_na_memoria(s, last_operator_pos + 1, strlen(semi_operation), semi_operation_operated);
+                    i = last_operator_pos + 1 + strlen(semi_operation);
                 }
             }
         }
 
         if(start_semi){
-            semi_operation[semi_i] = s[i];
-            semi_i++;
+            if(semi_i >= 99){
+                estouro_s = true;
+            } else {
+                semi_operation[semi_i] = s[i];
+                semi_i++;
+            }
         }
     }
-return 0;
+    
+    return s;
 }
 
 int main() {
@@ -171,7 +185,7 @@ int main() {
 
     fgets(s, sizeof(s), stdin);
 
-    int result = interpretador(s);
+    int result = operador(interpretador(s));
     printf("Resultado:  %d\n", result);
 
     return 0;
