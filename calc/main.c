@@ -22,19 +22,17 @@ typedef struct Separator_returns {
     int position;
 } separator_returns;
 
-separator_returns res;
-
-
 separator_returns separator(char s[100], int pos){
-    
+    separator_returns res;
     char buffer[100] = "";
     int j = 0;
 
     #define p res.position
 
-    for (p = pos; s[p] != '\n'; p++) {
+    for (p = pos; s[p] != '\0'; p++) {
         if (isdigit(s[p])) {
-            buffer[j++] = s[p];
+            buffer[j] = s[p];
+            j++;
         } else if (eh_operador(s[p])) {
             buffer[j] = '\0';
             res.number = atoi(buffer);
