@@ -74,6 +74,9 @@ int modu(int n1, int n2){
 
 int operador(char s[100]){
     separator_returns guarda_separador;
+
+    acabou = false;
+
     guarda_separador = separator(s, 0);
     int result = guarda_separador.number;
     char operador;
