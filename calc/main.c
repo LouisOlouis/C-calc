@@ -10,7 +10,7 @@ char eh_operador(char c) {
     switch (c) {
         case '+': case '-': case '*': case '/': 
         case '%': case '=': case '<': case '>': 
-        case '&': case '|':
+        case '&': case '|': case '(': case ')':
             return true;
         default:
             return false;
@@ -74,7 +74,7 @@ int modu(int n1, int n2){
     return buffer;
 }
 
-int interpretador(){
+int operador(char s[100]){
     separator_returns guarda_separador;
     guarda_separador = separator(s, 0);
     int result = guarda_separador.number;
@@ -108,12 +108,45 @@ int interpretador(){
     return result;
 }
 
+
+int interpretador(char s[100]){
+    int i = 0;
+    int last_operator_pos = 0;
+
+    bool start_semi = false;
+    int semi_i = 0;
+    char semi_operation[100];
+
+    for(i = 0; s[i] != '\n'; i++) {
+        if (eh_operador(s[i])) {
+            if(!start_semi){
+                if(s[i] == '*' || s[i] == '/') {
+                    start_semi = true;
+                    i = last_operator_pos;
+                } else {last_operator_pos = i;};
+            } else {
+                if(s[i] != '*' || s[i] != '/') {
+                    start_semi = false;
+                    int semi_operation_operated = operador(semi_operation);
+                    fseek()
+                }
+            }
+        }
+
+        if(start_semi){
+            semi_operation[semi_i] = s[i];
+            semi_i++;
+        }
+    }
+return 0;
+}
+
 int main() {
     char s[100];
 
     fgets(s, sizeof(s), stdin);
 
-    int result = interpretador();
+    int result = interpretador(s);
     printf("Resultado:  %d\n", result);
 
     return 0;
