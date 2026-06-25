@@ -181,11 +181,15 @@ void interpretador(char *s){
 int main(void) {
     char s[100];
 
-    fgets(s, sizeof(s), stdin);
+    printf("Calculadora inteligente\n");
+    while(true){
 
-    interpretador(s);
-    printf("Resultado:  %d\n",operador(s));
+        printf(">    ");
+        fgets(s, sizeof(s), stdin);
 
+        interpretador(s);
+        printf("Resultado:  %d\n",operador(s));
+    }
     return 0;
 }
 
