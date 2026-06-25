@@ -9,7 +9,7 @@ typedef struct {
     bool emprestado;
 } Livro;
 
-void clean_stdin() {
+void clean_stdin(void) {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
     return;
@@ -25,7 +25,7 @@ int buscaid(FILE *arquivo){
     return id;
 }
 
-void cadastrabook() {
+void cadastrabook(void) {
     printf("Cadastramento de livros\n\n");
 
     Livro l;
@@ -63,7 +63,7 @@ void cadastrabook() {
     return;
 }
 
-void listabook() {
+void listabook(void) {
     int bookid;
     printf("Digite o id do livro:   ");
     scanf("%d", &bookid);
@@ -93,7 +93,7 @@ void listabook() {
     fclose(arquivo);
 }
 
-void editabook(){
+void editabook(void){
     int bookid;
     printf("Digite o id do livro:   ");
     scanf("%d", &bookid);
@@ -143,7 +143,7 @@ void editabook(){
     fclose(arquivo);
 }
 
-void emprestabook(){
+void emprestabook(void){
 int bookid;
     printf("Digite o id do livro:   ");
     scanf("%d", &bookid);
@@ -185,7 +185,7 @@ int bookid;
     fclose(arquivo);
 }
 
-void devolvebook(){
+void devolvebook(void){
 int bookid;
     printf("Digite o id do livro:   ");
     scanf("%d", &bookid);
@@ -227,7 +227,7 @@ int bookid;
     fclose(arquivo);
 }
 
-int main() {
+int main(void) {
     int opcao;
     bool loop = true;
     while(loop){
