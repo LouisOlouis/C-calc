@@ -86,7 +86,7 @@ int operador(char s[Valor_maximo]){
     separator_returns guarda_separador;
 
     bool *acabou = &guarda_separador.acabou;
-    acabou = false;
+    *acabou = false;
 
     guarda_separador = separator(s, 0);
     int result = guarda_separador.number;
