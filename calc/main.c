@@ -195,8 +195,12 @@ int main(void) {
     while(true){
 
         printf(">    ");
-        fgets(s, sizeof(s), stdin);
+        if(fgets(s, sizeof(s), stdin) == NULL){
+            printf("Operacao nula");
+            return 0;
+        }
 
+        s[strcspn(s, "\n")] = '\0';
         interpretador(s);
         printf("Resultado:  %d\n",operador(s));
     }
