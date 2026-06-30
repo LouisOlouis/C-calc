@@ -61,13 +61,19 @@ int mult(int n1, int n2){
 }
 
 int divi(int n1, int n2){
-    if(n2 == 0) return 0;
+    if(n2 == 0) {
+        printf("Impossivel dividir por 0");
+        return 0;
+    }
     int buffer = n1/n2;
     return buffer;
 }
 
 int modu(int n1, int n2){
-    if(n2 == 0) return 0;
+    if(n2 == 0) {
+        printf("Impossivel dividir por 0");
+        return 0;
+    }
     int buffer = n1%n2;
     return buffer;
 }
