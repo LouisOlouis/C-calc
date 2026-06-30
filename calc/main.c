@@ -8,7 +8,6 @@
 #define negativo '_'
 #define Var_end '\0'
 
-bool acabou = false;
 
 char eh_operador(char c) {
     switch (c) {
@@ -24,6 +23,7 @@ char eh_operador(char c) {
 typedef struct Separator_returns {
     int number;
     int position;
+    bool acabou;
 } separator_returns;
 
 separator_returns separator(char s[Valor_maximo], int pos){
@@ -45,7 +45,7 @@ separator_returns separator(char s[Valor_maximo], int pos){
     }
     buffer[j] = Var_end;
     res.number = atoi(buffer);
-    acabou = true;
+    res.acabou = true;
     return res;
 }
 
@@ -85,6 +85,7 @@ int modu(int n1, int n2){
 int operador(char s[Valor_maximo]){
     separator_returns guarda_separador;
 
+    bool *acabou = &guarda_separador.acabou;
     acabou = false;
 
     guarda_separador = separator(s, 0);
