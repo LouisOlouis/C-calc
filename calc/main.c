@@ -108,6 +108,7 @@ int operador(char s[100]){
                 result = modu(result, guarda_separador.number);
                 break;
             default:
+            //operadores reconhecidos nao tratados serao tratados em atualizaçoes futuras
                 break;
         }
     }
@@ -160,10 +161,14 @@ void interpretador(char *s){
                 if(s[i] == '*' || s[i] == '/') {
                     start_semi = true;
                     semi_operation[0] = '\0';
-                    i = last_operator_pos + 1;
+                    if(last_operator_pos != 0){
+                        last_operator_pos += 1;
+                    }
+                    i = last_operator_pos;
                 } else {last_operator_pos = i;};
             } else {
-                if((s[i] != '*' && s[i] != '/') || estouro_s) {
+                if((s[i] != '*' && s[i] != '/')|| estouro_s){
+                    repete:
                     start_semi = false;
                     semi_operation[semi_i] = '\0';
                     int buffer_semi_operation_operated = operador(semi_operation);
@@ -171,8 +176,8 @@ void interpretador(char *s){
                     estouro_s = false;
                     char semi_operation_operated[20];
                     snprintf(semi_operation_operated, sizeof(semi_operation_operated), "%d", buffer_semi_operation_operated);
-                    substituir_na_memoria(s, last_operator_pos + 1, strlen(semi_operation), semi_operation_operated);
-                    i = last_operator_pos + 1 + strlen(semi_operation);
+                    substituir_na_memoria(s, last_operator_pos, strlen(semi_operation), semi_operation_operated);
+                    i = last_operator_pos + strlen(semi_operation_operated)-1;
                 }
             }
         }
@@ -185,6 +190,9 @@ void interpretador(char *s){
                 semi_i++;
             }
         }
+    }
+    if(start_semi && s[i] == '\0'){
+        goto repete;
     }
 }
 
