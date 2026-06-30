@@ -4,6 +4,10 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#define Valor_maximo 100
+#define negativo '_'
+#define Var_end '\0'
+
 bool acabou = false;
 
 char eh_operador(char c) {
@@ -22,24 +26,24 @@ typedef struct Separator_returns {
     int position;
 } separator_returns;
 
-separator_returns separator(char s[100], int pos){
+separator_returns separator(char s[Valor_maximo], int pos){
     separator_returns res;
-    char buffer[100] = "";
+    char buffer[Valor_maximo] = "";
     int j = 0;
 
     #define p res.position
 
-    for (p = pos; s[p] != '\0'; p++) {
+    for (p = pos; s[p] != Var_end; p++) {
         if (isdigit(s[p])) {
             buffer[j] = s[p];
             j++;
         } else if (eh_operador(s[p])) {
-            buffer[j] = '\0';
+            buffer[j] = Var_end;
             res.number = atoi(buffer);
             return res;
         } 
     }
-    buffer[j] = '\0';
+    buffer[j] = Var_end;
     res.number = atoi(buffer);
     acabou = true;
     return res;
@@ -78,7 +82,7 @@ int modu(int n1, int n2){
     return buffer;
 }
 
-int operador(char s[100]){
+int operador(char s[Valor_maximo]){
     separator_returns guarda_separador;
 
     acabou = false;
@@ -134,8 +138,8 @@ void substituir_na_memoria(char *str, int posicao, int tamanho_antigo, const cha
     char *resto_texto = ponto_insercao + tamanho_antigo;
     
     // Desloca o "resto do texto" para trás ou para frente usando memmove
-    // strlen(resto_texto) + 1 garante que o caractere '\0' também seja movido
-    if(tamanho_str - tamanho_antigo + tamanho_novo >= 100) {
+    // strlen(resto_texto) + 1 garante que o caractere Var_end também seja movido
+    if(tamanho_str - tamanho_antigo + tamanho_novo >= Valor_maximo) {
         printf("A nova string operada estoura o limite de 100 caracteres por operacao completa");
         return;
     }
@@ -151,16 +155,16 @@ void interpretador(char *s){
 
     bool start_semi = false;
     int semi_i = 0;
-    char semi_operation[100];
+    char semi_operation[Valor_maximo];
 
     bool estouro_s = false;
-
-    for(i = 0; s[i] != '\0'; i++) {
+    int i = 0;
+    for(i = 0; s[i] != Var_end; i++) {
         if (eh_operador(s[i])) {
             if(!start_semi){
                 if(s[i] == '*' || s[i] == '/') {
                     start_semi = true;
-                    semi_operation[0] = '\0';
+                    semi_operation[0] = Var_end;
                     if(last_operator_pos != 0){
                         last_operator_pos += 1;
                     }
@@ -170,7 +174,7 @@ void interpretador(char *s){
                 if((s[i] != '*' && s[i] != '/')|| estouro_s){
                     repete:
                     start_semi = false;
-                    semi_operation[semi_i] = '\0';
+                    semi_operation[semi_i] = Var_end;
                     int buffer_semi_operation_operated = operador(semi_operation);
                     semi_i = 0;
                     estouro_s = false;
@@ -191,13 +195,13 @@ void interpretador(char *s){
             }
         }
     }
-    if(start_semi && s[i] == '\0'){
+    if(start_semi && s[i] == Var_end){
         goto repete;
     }
 }
 
 int main(void) {
-    char s[100];
+    char s[Valor_maximo];
 
     printf("Calculadora inteligente\n");
     while(true){
@@ -208,11 +212,9 @@ int main(void) {
             return 0;
         }
 
-        s[strcspn(s, "\n")] = '\0';
+        s[strcspn(s, "\n")] = Var_end;
         interpretador(s);
         printf("Resultado:  %d\n",operador(s));
     }
     return 0;
 }
-
-
