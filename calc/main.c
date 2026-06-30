@@ -134,6 +134,10 @@ void substituir_na_memoria(char *str, int posicao, int tamanho_antigo, const cha
     
     // Desloca o "resto do texto" para trás ou para frente usando memmove
     // strlen(resto_texto) + 1 garante que o caractere '\0' também seja movido
+    if(strlen(str) - tamanho_antigo + tamanho_novo > 100) {
+        printf("A nova string operada estoura o limite de 100 caracteres por operacao completa");
+        return;
+    }
     memmove(ponto_insercao + tamanho_novo, resto_texto, strlen(resto_texto) + 1);
     
     // Copia o novo texto (menor) para o espaço reservado
