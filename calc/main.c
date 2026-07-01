@@ -151,7 +151,17 @@ void substituir_na_memoria(char *str, int posicao, int tamanho_antigo, const cha
 }
 
 void interpretador(char *s){
-    int i = 0;
+    //removedor de espaços
+    {
+        int write = 0;
+        for (int i = 0; s[i] != Var_end; i++) {
+            if (s[i] != ' ') {
+                s[write++] = s[i];
+            }
+        }
+        s[write] = Var_end;
+    }
+
     int last_operator_pos = 0;
 
     bool start_semi = false;
