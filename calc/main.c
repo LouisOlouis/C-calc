@@ -92,7 +92,7 @@ int operador(char s[Valor_maximo]){
     int result = guarda_separador.number;
     char operador;
 
-    while(!acabou){
+    while(!*acabou){
         operador = s[guarda_separador.position];
         guarda_separador = separator(s, guarda_separador.position + 1);
 
