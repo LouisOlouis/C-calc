@@ -153,32 +153,15 @@ void substituir_na_memoria(char *str, int posicao, int tamanho_antigo, const cha
 }
 
 void interpretador(char *s){
-    //removedor de espaços
-    {
-        int write = 0;
-        for (int i = 0; s[i] != Var_end; i++) {
-            if (s[i] != ' ') {
-                s[write++] = s[i];
-            }
-        }
-        s[write] = Var_end;
-    }
-    //interpretador de negativo
-    for(int i = 0; s[i] != Var_end; i++) {
-        if (s[i] == '-') {
-            if (i == 0 || eh_operador(s[i - 1])) {
-                s[i] = negativo;
-            }
-        }
-    }
-    //interpretador de operaçao prioritaria
-    int last_operator_pos = 0;
-
+    //variaveis basicas da interpretaçao
     bool start_semi = false;
     int semi_i = 0;
     char semi_operation[Valor_maximo];
-
     bool estouro_s = false;
+    //interpretador de parenteses
+
+    //interpretador de multiplicaçao e divisao prioritaria
+    int last_operator_pos = 0;
     int i = 0;
     for(i = 0; s[i] != Var_end; i++) {
         if (eh_operador(s[i])) {
@@ -221,6 +204,27 @@ void interpretador(char *s){
     }
 }
 
+void interpretacao_primaria(char *s){
+    //removedor de espaços
+    {
+        int write = 0;
+        for (int i = 0; s[i] != Var_end; i++) {
+            if (s[i] != ' ') {
+                s[write++] = s[i];
+            }
+        }
+        s[write] = Var_end;
+    }
+    //interpretador de negativo
+    for(int i = 0; s[i] != Var_end; i++) {
+        if (s[i] == '-') {
+            if (i == 0 || eh_operador(s[i - 1])) {
+                s[i] = negativo;
+            }
+        }
+    }
+    interpretador(s);
+}
 int main(void) {
     char s[Valor_maximo];
 
@@ -234,7 +238,7 @@ int main(void) {
         }
 
         s[strcspn(s, "\n")] = Var_end;
-        interpretador(s);
+        interpretacao_primaria(s);
         printf("Resultado:  %d\n",operador(s));
     }
     return 0;
