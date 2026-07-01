@@ -41,7 +41,10 @@ separator_returns separator(char s[Valor_maximo], int pos){
             buffer[j] = Var_end;
             res.number = atoi(buffer);
             return res;
-        } 
+        } else if(s[p] == negativo){
+            buffer[j] = '-';
+            j++;
+        }
     }
     buffer[j] = Var_end;
     res.number = atoi(buffer);
@@ -161,7 +164,15 @@ void interpretador(char *s){
         }
         s[write] = Var_end;
     }
-
+    //interpretador de negativo
+    for(int i = 0; s[i] != Var_end; i++) {
+        if (s[i] == '-') {
+            if (i == 0 || eh_operador(s[i - 1])) {
+                s[i] = negativo;
+            }
+        }
+    }
+    //interpretador de operaçao prioritaria
     int last_operator_pos = 0;
 
     bool start_semi = false;
