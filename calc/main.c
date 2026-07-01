@@ -159,7 +159,13 @@ void interpretador(char *s){
     char semi_operation[Valor_maximo];
     bool estouro_s = false;
     //interpretador de parenteses
-
+    bool parenteses_internos = false;
+    for(int i = 0; s[i] != Var_end; i++) {
+        if (s[i] == '(' && !start_semi) {
+            start_semi = true;
+            semi_operation[0] = Var_end;
+        }
+    }
     //interpretador de multiplicaçao e divisao prioritaria
     int last_operator_pos = 0;
     int i = 0;
