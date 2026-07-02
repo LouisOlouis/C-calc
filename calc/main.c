@@ -16,8 +16,10 @@ typedef struct Separator_returns {
 
 char eh_operador(char c);
 void substituir_na_memoria(char *str, int posicao, int tamanho_antigo, const char *texto_novo);
+void busca_parenteses(char *s,int *abertura,int *fechamento);
 
-void interpretacao_primaria(char *s);
+void remover_espacos(char *s);
+void interpretar_negativos(char *s);
 void interpretador_parenteses(char *s);
 void interpretador(char *s);
 
@@ -30,7 +32,8 @@ int mult(int n1, int n2);
 int divi(int n1, int n2);
 int modu(int n1, int n2);
 
-int main(void) {
+int main(void)
+{
     char s[Valor_maximo];
 
     printf("Calculadora inteligente\n");
@@ -44,7 +47,10 @@ int main(void) {
 
         s[strcspn(s, "\n")] = Var_end;
 
-        interpretacao_primaria(s);
+        remover_espacos(s);
+        interpretar_negativos(s);
+        interpretador_parenteses(s);
+        interpretador(s);
         int resultado = operador(s);
 
         printf("Resultado: %d\n", resultado);
@@ -53,18 +59,19 @@ int main(void) {
 }
 
 
-void interpretacao_primaria(char *s){
-    //removedor de espaços
-    {
-        int write = 0;
-        for (int i = 0; s[i] != Var_end; i++) {
-            if (s[i] != ' ') {
-                s[write++] = s[i];
-            }
+void remover_espacos(char *s)
+{
+    int write = 0;
+    for (int i = 0; s[i] != Var_end; i++) {
+        if (s[i] != ' ') {
+            s[write++] = s[i];
         }
-        s[write] = Var_end;
     }
-    //interpretador de negativo
+    s[write] = Var_end;
+}
+
+void interpretar_negativos(char *s)
+{
     for(int i = 0; s[i] != Var_end; i++) {
         if (s[i] == '-') {
             if (i == 0 || eh_operador(s[i - 1])) {
@@ -72,81 +79,69 @@ void interpretacao_primaria(char *s){
             }
         }
     }
-    interpretador_parenteses(s);
-    interpretador(s);
 }
 
-
-void interpretador_parenteses(char *s){
-    bool free_parenteses = false;
-
-    while(!free_parenteses){
-
-        int abertura = -1;
-        int fechamento = -1;
-
-        free_parenteses = true;
-
-        //procura o parenteses mais interno
-        for(int i = 0; s[i] != Var_end; i++) {
-
-            if(s[i] == '('){
-                abertura = i;
-                free_parenteses = false;
-            }
-
-            if(s[i] == ')' && abertura != -1){
-                fechamento = i;
-                break;
-            }
-        }
-
-        if(!free_parenteses){
-
-            char semi_operation[Valor_maximo];
-            int semi_i = 0;
-
-            //copia o conteudo do parenteses
-            for(int i = abertura+1; i < fechamento; i++){
-
-                if(semi_i >= Valor_maximo-1){
-                    printf("Expressao muito grande");
-                    return;
-                }
-
-                semi_operation[semi_i] = s[i];
-                semi_i++;
-            }
-
-            semi_operation[semi_i] = Var_end;
-
-            //resolve a operaçao interna
-            interpretacao_primaria(semi_operation);
-
-            int resultado = operador(semi_operation);
-
-            char resultado_str[20];
-
-            snprintf(
-                resultado_str,
-                sizeof(resultado_str),
-                "%d",
-                resultado
-            );
-
-            //substitui na expressao original
-            substituir_na_memoria(
-                s,
-                abertura,
-                fechamento-abertura+1,
-                resultado_str
-            );
+void busca_parenteses(char *s,int *abertura,int *fechamento)
+{
+    for (int i = 0; s[i] != Var_end; i++) {
+        if (s[i] == '(') {
+            *abertura = i;
+        } else if (s[i] == ')' && *abertura != -1) {
+            *fechamento = i;
+            break;
         }
     }
 }
 
+void interpretador_parenteses(char *s)
+{
+    while (1) {
+        int abertura = -1;
+        int fechamento = -1;
 
-void interpretador(char *s){
+        busca_parenteses(s, &abertura, &fechamento);
+
+
+        // Não há mais parênteses
+        if (abertura == -1 || fechamento == -1) {
+            break;
+        }
+
+        int tamanho = fechamento - abertura - 1;
+        if (tamanho < 0) {
+            printf("Erro: parenteses invalidos\n");
+            return;
+        }
+
+        if (tamanho >= Valor_maximo) {
+            printf("Erro: expressao muito grande\n");
+            return;
+        }
+
+        char semi_operation[Valor_maximo];
+        strncpy(semi_operation, &s[abertura + 1], tamanho);
+        semi_operation[tamanho] = Var_end;
+
+        // Resolve a expressão interna
+        interpretador_parenteses(semi_operation);
+        interpretador(semi_operation);
+        int resultado = operador(semi_operation);
+
+        char resultado_str[20];
+        snprintf(resultado_str, sizeof(resultado_str), "%d", resultado);
+
+        // Substitui "(expressao)" pelo resultado
+        substituir_na_memoria(
+            s,
+            abertura,
+            fechamento - abertura + 1,
+            resultado_str
+        );
+    }
+}
+
+void interpretador(char *s)
+{
     //interpretador de multiplicaçao e divisao prioritaria
     bool start_semi = false;
     int semi_i = 0;
@@ -154,7 +149,6 @@ void interpretador(char *s){
     bool estouro_s = false;
     int last_operator_pos = 0;
     int i = 0;
-
     for(i = 0; s[i] != Var_end; i++) {
         if (eh_operador(s[i])) {
             if(!start_semi){
@@ -210,7 +204,8 @@ void interpretador(char *s){
 }
 
 
-int operador(char s[Valor_maximo]){
+int operador(char s[Valor_maximo])
+{
     separator_returns guarda_separador;
 
     bool *acabou = &guarda_separador.acabou;
@@ -250,7 +245,8 @@ int operador(char s[Valor_maximo]){
 }
 
 
-separator_returns separator(char s[Valor_maximo], int pos){
+separator_returns separator(char s[Valor_maximo], int pos)
+{
     separator_returns res;
     char buffer[Valor_maximo] = "";
     int j = 0;
@@ -292,7 +288,7 @@ int mult(int n1, int n2){
 
 int divi(int n1, int n2){
     if(n2 == 0) {
-        printf("Impossivel dividir por 0");
+        printf("Impossivel dividir por 0\n");
         return 0;
     }
     int buffer = n1/n2;
@@ -301,7 +297,7 @@ int divi(int n1, int n2){
 
 int modu(int n1, int n2){
     if(n2 == 0) {
-        printf("Impossivel dividir por 0");
+        printf("Impossivel dividir por 0\n");
         return 0;
     }
     int buffer = n1%n2;
@@ -309,7 +305,8 @@ int modu(int n1, int n2){
 }
 
 
-void substituir_na_memoria(char *str, int posicao, int tamanho_antigo, const char *texto_novo) {
+void substituir_na_memoria(char *str, int posicao, int tamanho_antigo, const char *texto_novo)
+{
     int tamanho_str = strlen(str);
 
     if (posicao < 0 || posicao > tamanho_str)
@@ -338,10 +335,11 @@ void substituir_na_memoria(char *str, int posicao, int tamanho_antigo, const cha
     memcpy(ponto_insercao, texto_novo, tamanho_novo);
 }
 
-char eh_operador(char c) {
+char eh_operador(char c)
+{
     switch (c) {
         case '+': case '-': case '*': case '/': 
-        case '%': case '=': case '<': case '>': 
+        case '%': 
             return true;
         default:
             return false;
