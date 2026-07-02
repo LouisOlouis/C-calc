@@ -181,8 +181,21 @@ void interpretador(char *s){
                     semi_i = 0;
                     estouro_s = false;
                     char semi_operation_operated[20];
-                    snprintf(semi_operation_operated, sizeof(semi_operation_operated), "%d", buffer_semi_operation_operated);
-                    substituir_na_memoria(s, last_operator_pos, strlen(semi_operation), semi_operation_operated);
+
+                    snprintf(
+                        semi_operation_operated, 
+                        sizeof(semi_operation_operated), 
+                        "%d", 
+                        buffer_semi_operation_operated
+                    );
+
+                    substituir_na_memoria(
+                        s, 
+                        last_operator_pos, 
+                        strlen(semi_operation), 
+                        semi_operation_operated
+                    );
+                    
                     i = last_operator_pos + strlen(semi_operation_operated)-1;
                 }
             }
