@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-#define Valor_maximo 100
+#define MAX_SIZE 100
 #define negativo '_'
 #define Var_end '\0'
 
@@ -23,8 +23,8 @@ void interpretar_negativos(char *s);
 void interpretador_parenteses(char *s);
 void interpretador(char *s);
 
-int operador(char s[Valor_maximo]);
-separator_returns separator(char s[Valor_maximo], int pos);
+int operador(char s[MAX_SIZE]);
+separator_returns separator(char s[MAX_SIZE], int pos);
 
 int sum(int n1, int n2);
 int sub(int n1, int n2);
@@ -34,7 +34,7 @@ int modu(int n1, int n2);
 
 int main(void)
 {
-    char s[Valor_maximo];
+    char s[MAX_SIZE];
 
     printf("Calculadora inteligente\n");
     while(true){
@@ -113,12 +113,12 @@ void interpretador_parenteses(char *s)
             return;
         }
 
-        if (tamanho >= Valor_maximo) {
+        if (tamanho >= MAX_SIZE) {
             printf("Erro: expressao muito grande\n");
             return;
         }
 
-        char semi_operation[Valor_maximo];
+        char semi_operation[MAX_SIZE];
         strncpy(semi_operation, &s[abertura + 1], tamanho);
         semi_operation[tamanho] = Var_end;
 
@@ -140,71 +140,114 @@ void interpretador_parenteses(char *s)
     }
 }
 
+#define MAX_EXPR_SIZE 100
+#define MAX_RESULT_SIZE 20
+
+typedef struct {
+    bool capturando;
+    int inicio;
+    int tamanho;
+    char expressao[MAX_EXPR_SIZE];
+} ExpressaoPrioritaria;
+
+bool inicia_expressao_prioritaria(char operador)
+{
+    return operador == '*' || operador == '/';
+}
+
+void resolver_expressao(
+    char *s,
+    ExpressaoPrioritaria *expr
+)
+{
+    expr->expressao[expr->tamanho] = '\0';
+
+    int resultado = operador(expr->expressao);
+
+    char texto_resultado[MAX_RESULT_SIZE];
+
+    snprintf(
+        texto_resultado,
+        sizeof(texto_resultado),
+        "%d",
+        resultado
+    );
+
+    substituir_na_memoria(
+        s,
+        expr->inicio,
+        strlen(expr->expressao),
+        texto_resultado
+    );
+}
+
+void iniciar_captura(
+    ExpressaoPrioritaria *expr,
+    int inicio
+)
+{
+    expr->capturando = true;
+    expr->inicio = inicio;
+    expr->tamanho = 0;
+}
+
+void adicionar_caractere(
+    ExpressaoPrioritaria *expr,
+    char c
+)
+{
+    if(expr->tamanho >= MAX_EXPR_SIZE - 1)
+        return;
+
+    expr->expressao[expr->tamanho++] = c;
+}
+
 void interpretador(char *s)
 {
-    //interpretador de multiplicaçao e divisao prioritaria
-    bool start_semi = false;
-    int semi_i = 0;
-    char semi_operation[Valor_maximo];
-    bool estouro_s = false;
-    int last_operator_pos = 0;
-    int i = 0;
-    for(i = 0; s[i] != Var_end; i++) {
-        if (eh_operador(s[i])) {
-            if(!start_semi){
-                if(s[i] == '*' || s[i] == '/') {
-                    start_semi = true;
-                    semi_operation[0] = Var_end;
-                    if(last_operator_pos != 0){
-                        last_operator_pos += 1;
-                    }
-                    i = last_operator_pos;
-                } else {last_operator_pos = i;};
-            } else {
-                if((s[i] != '*' && s[i] != '/')|| estouro_s){
-                    repete:
-                    start_semi = false;
-                    semi_operation[semi_i] = Var_end;
-                    int buffer_semi_operation_operated = operador(semi_operation);
-                    semi_i = 0;
-                    estouro_s = false;
-                    char semi_operation_operated[20];
+    ExpressaoPrioritaria expr = {0};
 
-                    snprintf(
-                        semi_operation_operated, 
-                        sizeof(semi_operation_operated), 
-                        "%d", 
-                        buffer_semi_operation_operated
-                    );
+    int ultimo_operador = 0;
 
-                    substituir_na_memoria(
-                        s, 
-                        last_operator_pos, 
-                        strlen(semi_operation), 
-                        semi_operation_operated
-                    );
-                    
-                    i = last_operator_pos + strlen(semi_operation_operated)-1;
+    for(int i = 0; s[i] != '\0'; i++)
+    {
+        if(eh_operador(s[i]))
+        {
+            if(!expr.capturando)
+            {
+                if(inicia_expressao_prioritaria(s[i]))
+                {
+                    iniciar_captura(&expr, ultimo_operador);
+
+                    if(ultimo_operador != 0)
+                        i = ultimo_operador + 1;
+                    else
+                        i = 0;
+                }
+                else
+                {
+                    ultimo_operador = i;
+                }
+            }
+            else
+            {
+                if(s[i] != '*' && s[i] != '/')
+                {
+                    resolver_expressao(s, &expr);
+
+                    expr.capturando = false;
+
+                    i = expr.inicio;
                 }
             }
         }
 
-        if(start_semi){
-            if(semi_i >= 99){
-                estouro_s = true;
-            } else {
-                semi_operation[semi_i] = s[i];
-                semi_i++;
-            }
-        }
-    }
-    if(start_semi && s[i] == Var_end){
-        goto repete;
+        if(expr.capturando)
+            adicionar_caractere(&expr, s[i]);
     }
 }
 
 
-int operador(char s[Valor_maximo])
+int operador(char s[MAX_SIZE])
 {
     separator_returns guarda_separador;
 
@@ -245,10 +288,10 @@ int operador(char s[Valor_maximo])
 }
 
 
-separator_returns separator(char s[Valor_maximo], int pos)
+separator_returns separator(char s[MAX_SIZE], int pos)
 {
     separator_returns res;
-    char buffer[Valor_maximo] = "";
+    char buffer[MAX_SIZE] = "";
     int j = 0;
 
     for (res.position = pos; s[res.position] != Var_end; res.position++) {
@@ -325,7 +368,7 @@ void substituir_na_memoria(char *str, int posicao, int tamanho_antigo, const cha
     
     // Desloca o "resto do texto" para trás ou para frente usando memmove
     // strlen(resto_texto) + 1 garante que o caractere Var_end também seja movido
-    if(tamanho_str - tamanho_antigo + tamanho_novo >= Valor_maximo) {
+    if(tamanho_str - tamanho_antigo + tamanho_novo >= MAX_SIZE) {
         printf("A nova string operada estoura o limite de 100 caracteres por operacao completa");
         return;
     }
