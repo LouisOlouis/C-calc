@@ -8,6 +8,8 @@
 #define negativo '_'
 #define Var_end '\0'
 
+void interpretacao_primaria(char *s);
+
 
 char eh_operador(char c) {
     switch (c) {
@@ -216,19 +218,72 @@ void interpretador(char *s){
 }
 
 void interpretador_parenteses(char *s){
-    int last_parenteses_pos = 0;
-    //interpretador de parenteses
-    for(int i = 0; s[i] != Var_end; i++) {
-        if (s[i] == '(') {
-            last_parenteses_pos = i;
-        }
-        if (s[i] == ')'){
+    bool free_parenteses = false;
 
-            
+    while(!free_parenteses){
+
+        int abertura = -1;
+        int fechamento = -1;
+
+        free_parenteses = true;
+
+        //procura o parenteses mais interno
+        for(int i = 0; s[i] != Var_end; i++) {
+
+            if(s[i] == '('){
+                abertura = i;
+                free_parenteses = false;
+            }
+
+            if(s[i] == ')' && abertura != -1){
+                fechamento = i;
+                break;
+            }
+        }
+
+        if(!free_parenteses){
+
+            char semi_operation[Valor_maximo];
+            int semi_i = 0;
+
+            //copia o conteudo do parenteses
+            for(int i = abertura+1; i < fechamento; i++){
+
+                if(semi_i >= Valor_maximo-1){
+                    printf("Expressao muito grande");
+                    return;
+                }
+
+                semi_operation[semi_i] = s[i];
+                semi_i++;
+            }
+
+            semi_operation[semi_i] = Var_end;
+
+            //resolve a operaçao interna
+            interpretacao_primaria(semi_operation);
+
+            int resultado = operador(semi_operation);
+
+            char resultado_str[20];
+
+            snprintf(
+                resultado_str,
+                sizeof(resultado_str),
+                "%d",
+                resultado
+            );
+
+            //substitui na expressao original
+            substituir_na_memoria(
+                s,
+                abertura,
+                fechamento-abertura+1,
+                resultado_str
+            );
         }
     }
 }
-
 
 
 void interpretacao_primaria(char *s){
@@ -250,6 +305,7 @@ void interpretacao_primaria(char *s){
             }
         }
     }
+    interpretador_parenteses(s);
     interpretador(s);
 }
 
@@ -266,8 +322,11 @@ int main(void) {
         }
 
         s[strcspn(s, "\n")] = Var_end;
+
         interpretacao_primaria(s);
-        printf("Resultado:  %d\n",operador(s));
+        int resultado = operador(s);
+
+        printf("Resultado: %d\n", resultado);
     }
     return 0;
 }
