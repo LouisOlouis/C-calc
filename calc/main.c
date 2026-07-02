@@ -153,22 +153,14 @@ void substituir_na_memoria(char *str, int posicao, int tamanho_antigo, const cha
 }
 
 void interpretador(char *s){
-    //variaveis basicas da interpretaçao
+    //interpretador de multiplicaçao e divisao prioritaria
     bool start_semi = false;
     int semi_i = 0;
     char semi_operation[Valor_maximo];
     bool estouro_s = false;
-    //interpretador de parenteses
-    bool parenteses_internos = false;
-    for(int i = 0; s[i] != Var_end; i++) {
-        if (s[i] == '(' && !start_semi) {
-            start_semi = true;
-            semi_operation[0] = Var_end;
-        }
-    }
-    //interpretador de multiplicaçao e divisao prioritaria
     int last_operator_pos = 0;
     int i = 0;
+
     for(i = 0; s[i] != Var_end; i++) {
         if (eh_operador(s[i])) {
             if(!start_semi){
@@ -210,6 +202,22 @@ void interpretador(char *s){
     }
 }
 
+void interpretador_parenteses(char *s){
+    int last_parenteses_pos = 0;
+    //interpretador de parenteses
+    for(int i = 0; s[i] != Var_end; i++) {
+        if (s[i] == '(') {
+            last_parenteses_pos = i;
+        }
+        if (s[i] == ')'){
+
+            
+        }
+    }
+}
+
+
+
 void interpretacao_primaria(char *s){
     //removedor de espaços
     {
@@ -231,6 +239,7 @@ void interpretacao_primaria(char *s){
     }
     interpretador(s);
 }
+
 int main(void) {
     char s[Valor_maximo];
 
