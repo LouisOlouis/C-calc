@@ -9,12 +9,6 @@
 #define MAX_EXPR_SIZE 100
 #define MAX_RESULT_SIZE 20
 
-typedef struct {
-    bool capturando;
-    int inicio;
-    int tamanho;
-    char expressao[MAX_EXPR_SIZE];
-} ExpressaoPrioritaria;
 
 typedef struct Separator_returns {
     int number;
@@ -63,7 +57,6 @@ int main(void) {
     return 0;
 }
 
-
 void remover_espacos(char *s) {
     int write = 0;
     for (size_t i = 0; s[i] != '\0'; i++) {
@@ -95,55 +88,93 @@ void busca_parenteses(char *s, int *abertura, int *fechamento) {
     }
 }
 
+typedef struct ExpressaoParenteses{
+    bool capturando;
+    int inicio;
+    int profundidade;
+    int tamanho;
+    char expressao[MAX_SIZE];
+} ExpressaoParenteses;
+
+void iniciar_captura_parenteses(ExpressaoParenteses *expr, int posicao) {
+    expr->capturando = true;
+    expr->inicio = posicao;
+    expr->profundidade = 1;
+    expr->tamanho = 0;
+    expr->expressao[0] = '\0';
+}
+
+void adicionar_caractere_parenteses(ExpressaoParenteses *expr, char c) {
+    if(expr->tamanho >= MAX_SIZE - 1)
+        return;
+
+    expr->expressao[expr->tamanho++] = c;
+    expr->expressao[expr->tamanho] = '\0';
+}
+
+void resolver_parenteses(char *s, ExpressaoParenteses *expr, int fechamento) {
+    interpretador_parenteses(expr->expressao);
+    interpretador_prioritario(expr->expressao);
+
+    int resultado = operador(expr->expressao);
+
+    char resultado_str[20];
+
+    snprintf(
+        resultado_str,
+        sizeof(resultado_str),
+        "%d",
+        resultado
+    );
+
+    substituir_na_memoria(
+        s,
+        expr->inicio,
+        fechamento - expr->inicio + 1,
+        resultado_str
+    );
+
+    expr->capturando = false;
+}
+
 void interpretador_parenteses(char *s) {
-    while (1) {
-        int abertura = -1;
-        int fechamento = -1;
+    ExpressaoParenteses expr = {0};
 
-        busca_parenteses(s, &abertura, &fechamento);
+    for (int i = 0; s[i] != '\0'; i++) {
+        if (!expr.capturando) {
+            if (s[i] == '(') {
+                iniciar_captura_parenteses(&expr, i);
+            }
+        } else {
+            if (s[i] == '(') {
+                expr.profundidade++;
 
+                adicionar_caractere_parenteses(&expr, s[i]);
+            } else if (s[i] == ')') {
+                expr.profundidade--;
 
-        // Não há mais parênteses
-        if (abertura == -1 || fechamento == -1) {
-            break;
+                if (expr.profundidade == 0) {
+                    resolver_parenteses(s, &expr, i);
+                    i = expr.inicio - 1;
+                }
+                else {
+                    adicionar_caractere_parenteses(&expr, s[i]);
+                }
+            } else {
+                adicionar_caractere_parenteses(&expr, s[i]);
+            }
         }
-
-        int tamanho = fechamento - abertura - 1;
-        if (tamanho < 0) {
-            printf("Erro: parenteses invalidos\n");
-            return;
-        }
-
-        if (tamanho >= MAX_SIZE) {
-            printf("Erro: expressao muito grande\n");
-            return;
-        }
-
-        char semi_operation[MAX_SIZE];
-        strncpy(semi_operation, &s[abertura + 1], tamanho);
-        semi_operation[tamanho] = '\0';
-
-        // Resolve a expressão interna
-        interpretador_parenteses(semi_operation);
-        interpretador_prioritario(semi_operation);
-        int resultado = operador(semi_operation);
-
-        char resultado_str[20];
-        snprintf(resultado_str, sizeof(resultado_str), "%d", resultado);
-
-        // Substitui "(expressao)" pelo resultado
-        substituir_na_memoria(
-            s,
-            abertura,
-            fechamento - abertura + 1,
-            resultado_str
-        );
     }
 }
 
+typedef struct ExpressaoPrioritaria{
+    bool capturando;
+    int inicio;
+    int tamanho;
+    char expressao[MAX_EXPR_SIZE];
+} ExpressaoPrioritaria;
 
-
-bool inicia_expressao_prioritaria(char operador) {
+bool eh_expressao_prioritaria(char operador) {
     return operador == '*' || operador == '/';
 }
 
@@ -190,7 +221,7 @@ void interpretador_prioritario(char *s) {
     for(int i = 0; s[i] != '\0'; i++) {
         if(eh_operador(s[i])) {
             if(!expr.capturando) {
-                if(inicia_expressao_prioritaria(s[i])) {
+                if(eh_expressao_prioritaria(s[i])) {
                     iniciar_captura(&expr, ultimo_operador);
 
                     if(ultimo_operador != 0) {
