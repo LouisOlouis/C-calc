@@ -10,27 +10,48 @@
 #define MAX_RESULT_SIZE 20
 
 
-typedef struct Separator_returns {
+typedef struct SeparatorReturns {
     int number;
     int position;
     bool acabou;
-} separator_returns;
+} SeparatorReturns;
+
+typedef struct ExpressaoParenteses{
+    int inicio;
+    int profundidade;
+    int tamanho;
+    char expressao[MAX_SIZE];
+    bool capturando;
+} ExpressaoParenteses;
+
+typedef struct ExpressaoPrioritaria{
+    int inicio;
+    int tamanho;
+    char expressao[MAX_EXPR_SIZE];
+    bool capturando;
+} ExpressaoPrioritaria;
 
 void substituir_na_memoria(char *str, int posicao, int tamanho_antigo, const char *texto_novo);
-void busca_parenteses(char *s,int *abertura,int *fechamento);
-separator_returns separator(char s[MAX_SIZE], int pos);
+void resolver_parenteses(char *s, ExpressaoParenteses *expr, int fechamento);
+void iniciar_captura_parenteses(ExpressaoParenteses *expr, int posicao);
+void adicionar_caractere_parenteses(ExpressaoParenteses *expr, char c);
+void resolver_expressao(char *s, ExpressaoPrioritaria *expr);
+void iniciar_captura(ExpressaoPrioritaria *expr, int inicio);
+void adicionar_caractere(ExpressaoPrioritaria *expr, char c);
+SeparatorReturns separator(char s[MAX_SIZE], int pos);
+bool eh_expressao_prioritaria(char operador);
 void interpretador_prioritario(char *s);
 void interpretador_parenteses(char *s);
 void interpretar_negativos(char *s);
+bool eh_precedente_negativo(char c);
 int operador(char s[MAX_SIZE]);
 void remover_espacos(char *s);
-char eh_operador(char c);
+bool eh_operador(char c);
 int mult(int n1, int n2);
 int divi(int n1, int n2);
 int modu(int n1, int n2);
 int sum(int n1, int n2);
 int sub(int n1, int n2);
-
 
 int main(void) {
     char s[MAX_SIZE];
@@ -70,31 +91,13 @@ void remover_espacos(char *s) {
 void interpretar_negativos(char *s) {
     for(int i = 0; s[i] != '\0'; i++) {
         if (s[i] == '-') {
-            if (i == 0 || eh_operador(s[i - 1])) {
+            if (i == 0 || eh_precedente_negativo(s[i - 1])) {
                 s[i] = negativo;
             }
         }
     }
 }
 
-void busca_parenteses(char *s, int *abertura, int *fechamento) {
-    for (int i = 0; s[i] != '\0'; i++) {
-        if (s[i] == '(') {
-            *abertura = i;
-        } else if (s[i] == ')' && *abertura != -1) {
-            *fechamento = i;
-            break;
-        }
-    }
-}
-
-typedef struct ExpressaoParenteses{
-    bool capturando;
-    int inicio;
-    int profundidade;
-    int tamanho;
-    char expressao[MAX_SIZE];
-} ExpressaoParenteses;
 
 void iniciar_captura_parenteses(ExpressaoParenteses *expr, int posicao) {
     expr->capturando = true;
@@ -167,12 +170,6 @@ void interpretador_parenteses(char *s) {
     }
 }
 
-typedef struct ExpressaoPrioritaria{
-    bool capturando;
-    int inicio;
-    int tamanho;
-    char expressao[MAX_EXPR_SIZE];
-} ExpressaoPrioritaria;
 
 bool eh_expressao_prioritaria(char operador) {
     return operador == '*' || operador == '/';
@@ -222,14 +219,10 @@ void interpretador_prioritario(char *s) {
         if(eh_operador(s[i])) {
             if(!expr.capturando) {
                 if(eh_expressao_prioritaria(s[i])) {
-                    iniciar_captura(&expr, ultimo_operador);
-
-                    if(ultimo_operador != 0) {
-                        i = ultimo_operador + 1;}
-                    else {
-                        i = 0;}
-                }
-                else {
+                    int inicio_operando = (ultimo_operador != 0) ? ultimo_operador + 1 : 0;
+                    iniciar_captura(&expr, inicio_operando);
+                    i = inicio_operando; 
+                } else {
                     ultimo_operador = i;
                 }
             }
@@ -247,11 +240,14 @@ void interpretador_prioritario(char *s) {
         if(expr.capturando){
             adicionar_caractere(&expr, s[i]);}
     }
+    if (expr.capturando) {
+        resolver_expressao(s, &expr);
+    }
 }
 
 
 int operador(char s[MAX_SIZE]) {
-    separator_returns guarda_separador;
+    SeparatorReturns guarda_separador;
 
     bool *acabou = &guarda_separador.acabou;
     *acabou = false;
@@ -290,8 +286,8 @@ int operador(char s[MAX_SIZE]) {
 }
 
 
-separator_returns separator(char s[MAX_SIZE], int pos) {
-    separator_returns res;
+SeparatorReturns separator(char s[MAX_SIZE], int pos) {
+    SeparatorReturns res = {0};
     char buffer[MAX_SIZE] = "";
     int j = 0;
 
@@ -373,10 +369,20 @@ void substituir_na_memoria(char *str, int posicao, int tamanho_antigo, const cha
     memcpy(ponto_insercao, texto_novo, tamanho_novo);
 }
 
-char eh_operador(char c) {
+bool eh_operador(char c) {
     switch (c) {
         case '+': case '-': case '*': case '/': 
         case '%': 
+            return true;
+        default:
+            return false;
+    }
+}
+
+bool eh_precedente_negativo(char c) {
+    switch (c) {
+        case '+': case '-': case '*': case '/': 
+        case '%': case '(':
             return true;
         default:
             return false;
