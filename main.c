@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include <math.h>
 
 #define MAX_SIZE 100
 #define negativo '_'
@@ -11,7 +12,7 @@
 
 
 typedef struct SeparatorReturns {
-    int number;
+    double number;
     int position;
     bool acabou;
 } SeparatorReturns;
@@ -44,14 +45,14 @@ void interpretador_prioritario(char *s);
 void interpretador_parenteses(char *s);
 void interpretar_negativos(char *s);
 bool eh_precedente_negativo(char c);
-int operador(char s[MAX_SIZE]);
+double operador(char s[MAX_SIZE]);
 void remover_espacos(char *s);
 bool eh_operador(char c);
-int mult(int n1, int n2);
-int divi(int n1, int n2);
-int modu(int n1, int n2);
-int sum(int n1, int n2);
-int sub(int n1, int n2);
+double mult(double n1, double n2);
+double divi(double n1, double n2);
+double modu(double n1, double n2);
+double sum(double n1, double n2);
+double sub(double n1, double n2);
 
 int main(void) {
     char s[MAX_SIZE];
@@ -71,9 +72,9 @@ int main(void) {
         interpretar_negativos(s);
         interpretador_parenteses(s);
         interpretador_prioritario(s);
-        int resultado = operador(s);
+        double resultado = operador(s);
 
-        printf("Resultado: %d\n", resultado);
+        printf("Resultado: %g\n", resultado);
     }
     return 0;
 }
@@ -119,14 +120,14 @@ void resolver_parenteses(char *s, ExpressaoParenteses *expr, int fechamento) {
     interpretador_parenteses(expr->expressao);
     interpretador_prioritario(expr->expressao);
 
-    int resultado = operador(expr->expressao);
+    double resultado = operador(expr->expressao);
 
     char resultado_str[20];
 
     snprintf(
         resultado_str,
         sizeof(resultado_str),
-        "%d",
+        "%g",
         resultado
     );
 
@@ -178,14 +179,14 @@ bool eh_expressao_prioritaria(char operador) {
 void resolver_expressao(char *s, ExpressaoPrioritaria *expr) {
     expr->expressao[expr->tamanho] = '\0';
 
-    int resultado = operador(expr->expressao);
+    double resultado = operador(expr->expressao);
 
     char texto_resultado[MAX_RESULT_SIZE];
 
     snprintf(
         texto_resultado,
         sizeof(texto_resultado),
-        "%d",
+        "%g",
         resultado
     );
 
@@ -246,14 +247,14 @@ void interpretador_prioritario(char *s) {
 }
 
 
-int operador(char s[MAX_SIZE]) {
+double operador(char s[MAX_SIZE]) {
     SeparatorReturns guarda_separador;
 
     bool *acabou = &guarda_separador.acabou;
     *acabou = false;
 
     guarda_separador = separator(s, 0);
-    int result = guarda_separador.number;
+    double result = guarda_separador.number;
     char operador;
 
     while(!*acabou) {
@@ -292,12 +293,12 @@ SeparatorReturns separator(char s[MAX_SIZE], int pos) {
     int j = 0;
 
     for (res.position = pos; s[res.position] != '\0'; res.position++) {
-        if (isdigit(s[res.position])) {
+        if (isdigit(s[res.position]) || s[res.position] == '.') {
             buffer[j] = s[res.position];
             j++;
         } else if (eh_operador(s[res.position])) {
             buffer[j] = '\0';
-            res.number = atoi(buffer);
+            res.number = atof(buffer);
             return res;
         } else if(s[res.position] == negativo){
             buffer[j] = '-';
@@ -305,42 +306,42 @@ SeparatorReturns separator(char s[MAX_SIZE], int pos) {
         }
     }
     buffer[j] = '\0';
-    res.number = atoi(buffer);
+    res.number = atof(buffer);
     res.acabou = true;
     return res;
 }
 
 
-int sum(int n1, int n2) {
-    int buffer = n1 + n2;
+double sum(double n1, double n2) {
+    double buffer = n1 + n2;
     return buffer;
 }
 
-int sub(int n1, int n2) {
-    int buffer = n1 - n2;
+double sub(double n1, double n2) {
+    double buffer = n1 - n2;
     return buffer;
 }
 
-int mult(int n1, int n2) {
-    int buffer = n1 * n2;
+double mult(double n1, double n2) {
+    double buffer = n1 * n2;
     return buffer;
 }
 
-int divi(int n1, int n2) {
-    if(n2 == 0) {
+double divi(double n1, double n2) {
+    if(fabs(n2) < 1e-9) {
         printf("Impossivel dividir por 0\n");
         return 0;
     }
-    int buffer = n1 / n2;
+    double buffer = n1 / n2;
     return buffer;
 }
 
-int modu(int n1, int n2) {
-    if(n2 == 0) {
+double modu(double n1, double n2) {
+    if(fabs(n2) < 1e-9) {
         printf("Impossivel dividir por 0\n");
         return 0;
     }
-    int buffer = n1 % n2;
+    double buffer = fmod(n1,n2);
     return buffer;
 }
 
