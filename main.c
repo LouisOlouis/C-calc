@@ -4,11 +4,21 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdarg.h>
+
+// #define OPERATION_DEBUG
+
+#ifdef OPERATION_DEBUG
+    #define DEBUG_LOG(fmt, ...) printf("[DEBUG] " fmt "\n", ##__VA_ARGS__)
+#else
+    #define DEBUG_LOG(fmt, ...) ((void)0)
+#endif
 
 #define MAX_SIZE 100
 #define negativo '_'
 #define MAX_EXPR_SIZE 100
 #define MAX_RESULT_SIZE 20
+#define PRECISION "%.15lf"
 
 
 typedef struct SeparatorReturns {
@@ -40,6 +50,7 @@ void resolver_expressao(char *s, ExpressaoPrioritaria *expr);
 void iniciar_captura(ExpressaoPrioritaria *expr, int inicio);
 void adicionar_caractere(ExpressaoPrioritaria *expr, char c);
 SeparatorReturns separator(char s[MAX_SIZE], int pos);
+void num_fmt(char *buffer, size_t size, double num);
 bool eh_expressao_prioritaria(char operador);
 void interpretador_prioritario(char *s);
 void interpretador_parenteses(char *s);
@@ -48,6 +59,7 @@ bool eh_precedente_negativo(char c);
 double operador(char s[MAX_SIZE]);
 void remover_espacos(char *s);
 bool eh_operador(char c);
+
 double mult(double n1, double n2);
 double divi(double n1, double n2);
 double modu(double n1, double n2);
@@ -67,16 +79,45 @@ int main(void) {
         }
 
         s[strcspn(s, "\n")] = '\0';
+        DEBUG_LOG("Entrada recebida: %s", s);
 
         remover_espacos(s);
-        interpretar_negativos(s);
-        interpretador_parenteses(s);
-        interpretador_prioritario(s);
-        double resultado = operador(s);
+        DEBUG_LOG("Depois de remover espacos: %s", s);
 
-        printf("Resultado: %g\n", resultado);
+        interpretar_negativos(s);
+        DEBUG_LOG("Depois de interpretar negativos: %s", s);
+
+        interpretador_parenteses(s);
+        DEBUG_LOG("Depois de resolver parenteses: %s", s);
+
+        interpretador_prioritario(s);
+        DEBUG_LOG("Depois de resolver prioridades: %s", s);
+
+
+
+        char buffer[32] = {0};
+        num_fmt(buffer, sizeof(buffer), operador(s));
+
+        printf("Resultado: %s\n", buffer);
     }
     return 0;
+}
+
+void num_fmt(char *buffer, size_t size, double num) {
+
+    DEBUG_LOG("Entrada recebida num_fmt: "PRECISION"\n", num);
+    snprintf(buffer, size, PRECISION, num);
+    DEBUG_LOG("buffer num_fmt: %s\n", buffer);
+
+    size_t end = strlen(buffer) - 1;
+
+    while (end > 0 && buffer[end] == '0') {
+        if (buffer[end] == '0' && buffer[end-1] == '.')
+            return;
+        buffer[end--] = '\0';
+    }
+
+    DEBUG_LOG("2 buffer num_fmt: %s\n", buffer);
 }
 
 void remover_espacos(char *s) {
@@ -99,7 +140,6 @@ void interpretar_negativos(char *s) {
     }
 }
 
-
 void iniciar_captura_parenteses(ExpressaoParenteses *expr, int posicao) {
     expr->capturando = true;
     expr->inicio = posicao;
@@ -117,6 +157,7 @@ void adicionar_caractere_parenteses(ExpressaoParenteses *expr, char c) {
 }
 
 void resolver_parenteses(char *s, ExpressaoParenteses *expr, int fechamento) {
+    DEBUG_LOG("resolver_parenteses: inicio=%d fechamento=%d profundidade=%d expressao='%s'", expr->inicio, fechamento, expr->profundidade, expr->expressao);
     interpretador_parenteses(expr->expressao);
     interpretador_prioritario(expr->expressao);
 
@@ -124,10 +165,9 @@ void resolver_parenteses(char *s, ExpressaoParenteses *expr, int fechamento) {
 
     char resultado_str[20];
 
-    snprintf(
+    num_fmt(
         resultado_str,
         sizeof(resultado_str),
-        "%g",
         resultado
     );
 
@@ -138,6 +178,7 @@ void resolver_parenteses(char *s, ExpressaoParenteses *expr, int fechamento) {
         resultado_str
     );
 
+    DEBUG_LOG("resultado parenteses: %s", resultado_str);
     expr->capturando = false;
 }
 
@@ -178,15 +219,15 @@ bool eh_expressao_prioritaria(char operador) {
 
 void resolver_expressao(char *s, ExpressaoPrioritaria *expr) {
     expr->expressao[expr->tamanho] = '\0';
+    DEBUG_LOG("resolver_expressao: inicio=%d expressao='%s'", expr->inicio, expr->expressao);
 
     double resultado = operador(expr->expressao);
 
     char texto_resultado[MAX_RESULT_SIZE];
 
-    snprintf(
+    num_fmt(
         texto_resultado,
         sizeof(texto_resultado),
-        "%g",
         resultado
     );
 
@@ -196,6 +237,8 @@ void resolver_expressao(char *s, ExpressaoPrioritaria *expr) {
         strlen(expr->expressao),
         texto_resultado
     );
+
+    DEBUG_LOG("resultado expressao prioritaria: %s", texto_resultado);
 }
 
 void iniciar_captura(ExpressaoPrioritaria *expr, int inicio) {
@@ -215,6 +258,7 @@ void interpretador_prioritario(char *s) {
     ExpressaoPrioritaria expr = {0};
 
     int ultimo_operador = 0;
+    DEBUG_LOG("interpretador_prioritario: entrada='%s'", s);
 
     for(int i = 0; s[i] != '\0'; i++) {
         if(eh_operador(s[i])) {
@@ -256,10 +300,12 @@ double operador(char s[MAX_SIZE]) {
     guarda_separador = separator(s, 0);
     double result = guarda_separador.number;
     char operador;
+    DEBUG_LOG("operador: valor inicial=%.15f", result);
 
     while(!*acabou) {
         operador = s[guarda_separador.position];
         guarda_separador = separator(s, guarda_separador.position + 1);
+        DEBUG_LOG("operador: operador='%c' proximo=%.15f", operador, guarda_separador.number);
 
         switch(operador) {
             case '+':
@@ -283,6 +329,7 @@ double operador(char s[MAX_SIZE]) {
         }
     }
 
+    DEBUG_LOG("operador: resultado final=%.15f", result);
     return result;
 }
 
@@ -292,6 +339,7 @@ SeparatorReturns separator(char s[MAX_SIZE], int pos) {
     char buffer[MAX_SIZE] = "";
     int j = 0;
 
+    DEBUG_LOG("separator: pos=%d", pos);
     for (res.position = pos; s[res.position] != '\0'; res.position++) {
         if (isdigit(s[res.position]) || s[res.position] == '.') {
             buffer[j] = s[res.position];
