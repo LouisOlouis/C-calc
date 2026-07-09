@@ -6,7 +6,7 @@
 #include <math.h>
 #include <stdarg.h>
 
-#define TESTING_DEBUG
+// #define TESTING_DEBUG
 // #define OPERATION_DEBUG
 
 #ifdef OPERATION_DEBUG
@@ -69,7 +69,7 @@ void interpretador_parenteses(char *s);
 void interpretador_fatorial(char *s);
 void interpretar_negativos(char *s);
 bool eh_precedente_negativo(char c);
-double operador(char s[MAX_SIZE]);
+double operador(char *s);
 void remover_espacos(char *s);
 double fatoracao(double n);
 bool eh_operador(char c);
@@ -457,7 +457,7 @@ void interpretador_prioritario(char *s) {
 }
 
 
-double operador(char s[MAX_SIZE]) {
+double operador(char *s) {
     SeparatorReturns guarda_separador;
 
     bool *acabou = &guarda_separador.acabou;
