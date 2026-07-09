@@ -128,12 +128,13 @@ void num_fmt(char *buffer, size_t size, double num) {
     size_t end = strlen(buffer) - 1;
 
     while (end > 0 && buffer[end] == '0') {
-        if (buffer[end] == '0' && buffer[end-1] == '.')
-            return;
         buffer[end--] = '\0';
     }
+    if (end > 0 && buffer[end] == '.') {
+        buffer[end] = '\0';
+    }
 
-    DEBUG_LOG("2 buffer num_fmt: %s\n", buffer);
+    DEBUG_LOG("pos while buffer num_fmt: %s\n", buffer);
 }
 
 void remover_espacos(char *s) {
@@ -199,31 +200,6 @@ void resolver_parenteses(char *s, ExpressaoParenteses *expr, int fechamento) {
     expr->capturando = false;
 }
 
-typedef struct ExpressaoFatorial{
-    int inicio;
-    int tamanho;
-    char expressao;
-    bool capturando;
-} ExpressaoFatorial;
-
-void iniciar_captura_fatorial(ExpressaoFatorial *expr, int posicao) {
-    expr->capturando = true;
-    expr->inicio = posicao;
-    expr->tamanho = 0;
-    expr->expressao = '\0';
-}
-
-void interpretador_fatorial(char *s) {
-    ExpressaoFatorial expr = {0};
-
-    for (int i = 0; s[i] != '\0'; i++) {
-        if (!expr.capturando) {
-            if(s[i] == '!'){
-                iniciar_captura_fatorial(&expr, i);
-            }
-        }
-}
-}
 
 void interpretador_parenteses(char *s) {
     ExpressaoParenteses expr = {0};
