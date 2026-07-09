@@ -182,6 +182,32 @@ void resolver_parenteses(char *s, ExpressaoParenteses *expr, int fechamento) {
     expr->capturando = false;
 }
 
+typedef struct ExpressaoFatorial{
+    int inicio;
+    int tamanho;
+    char expressao;
+    bool capturando;
+} ExpressaoFatorial;
+
+void iniciar_captura_fatorial(ExpressaoFatorial *expr, int posicao) {
+    expr->capturando = true;
+    expr->inicio = posicao;
+    expr->tamanho = 0;
+    expr->expressao = '\0';
+}
+
+void interpretador_fatorial(char *s) {
+    ExpressaoFatorial expr = {0};
+
+    for (int i = 0; s[i] != '\0'; i++) {
+        if (!expr.capturando) {
+            if(s[i] == '!'){
+                iniciar_captura_fatorial(&expr, i);
+            }
+        }
+}
+}
+
 void interpretador_parenteses(char *s) {
     ExpressaoParenteses expr = {0};
 
