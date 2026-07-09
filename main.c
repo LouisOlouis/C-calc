@@ -20,7 +20,7 @@
 #define MAX_RESULT_SIZE 40
 #define MAX_FATORIAL_SIZE 6
 #define PRECISION "%.15lf"
-
+#define EPSILON 1e-9
 
 typedef struct SeparatorReturns {
     double number;
@@ -505,7 +505,7 @@ double mult(double n1, double n2) {
 }
 
 double divi(double n1, double n2) {
-    if(fabs(n2) < 1e-9) {
+    if(fabs(n2) < EPSILON) {
         printf("Impossivel dividir por 0\n");
         return 0;
     }
@@ -514,7 +514,7 @@ double divi(double n1, double n2) {
 }
 
 double modu(double n1, double n2) {
-    if(fabs(n2) < 1e-9) {
+    if(fabs(n2) < EPSILON) {
         printf("Impossivel dividir por 0\n");
         return 0;
     }
