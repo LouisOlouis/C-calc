@@ -17,7 +17,8 @@
 #define MAX_SIZE 100
 #define negativo '_'
 #define MAX_EXPR_SIZE 100
-#define MAX_RESULT_SIZE 20
+#define MAX_RESULT_SIZE 40
+#define MAX_FATORIAL_SIZE 6
 #define PRECISION "%.15lf"
 
 
@@ -42,10 +43,20 @@ typedef struct ExpressaoPrioritaria{
     bool capturando;
 } ExpressaoPrioritaria;
 
+typedef struct ExpressaoFatorial{
+    int inicio;
+    int tamanho;
+    char expressao[MAX_FATORIAL_SIZE];
+    bool capturando;
+} ExpressaoFatorial;
+
 void substituir_na_memoria(char *str, int posicao, int tamanho_antigo, const char *texto_novo);
 void resolver_parenteses(char *s, ExpressaoParenteses *expr, int fechamento);
 void iniciar_captura_parenteses(ExpressaoParenteses *expr, int posicao);
 void adicionar_caractere_parenteses(ExpressaoParenteses *expr, char c);
+void iniciar_captura_fatorial(ExpressaoFatorial *expr, int posicao);
+void adicionar_caractere_fatorial(ExpressaoFatorial *expr, char c);
+void resolver_expressao_fatorial(char *s, ExpressaoFatorial *expr);
 void resolver_expressao(char *s, ExpressaoPrioritaria *expr);
 void iniciar_captura(ExpressaoPrioritaria *expr, int inicio);
 void adicionar_caractere(ExpressaoPrioritaria *expr, char c);
@@ -54,10 +65,12 @@ void num_fmt(char *buffer, size_t size, double num);
 bool eh_expressao_prioritaria(char operador);
 void interpretador_prioritario(char *s);
 void interpretador_parenteses(char *s);
+void interpretador_fatorial(char *s);
 void interpretar_negativos(char *s);
 bool eh_precedente_negativo(char c);
 double operador(char s[MAX_SIZE]);
 void remover_espacos(char *s);
+double fatoracao(double n);
 bool eh_operador(char c);
 
 double mult(double n1, double n2);
@@ -89,6 +102,9 @@ int main(void) {
 
         interpretador_parenteses(s);
         DEBUG_LOG("Depois de resolver parenteses: %s", s);
+
+        interpretador_fatorial(s);
+        DEBUG_LOG("Depois de resolver fatoriais: %s",s);
 
         interpretador_prioritario(s);
         DEBUG_LOG("Depois de resolver prioridades: %s", s);
@@ -159,6 +175,7 @@ void adicionar_caractere_parenteses(ExpressaoParenteses *expr, char c) {
 void resolver_parenteses(char *s, ExpressaoParenteses *expr, int fechamento) {
     DEBUG_LOG("resolver_parenteses: inicio=%d fechamento=%d profundidade=%d expressao='%s'", expr->inicio, fechamento, expr->profundidade, expr->expressao);
     interpretador_parenteses(expr->expressao);
+    interpretador_fatorial(expr->expressao);
     interpretador_prioritario(expr->expressao);
 
     double resultado = operador(expr->expressao);
@@ -239,6 +256,76 @@ void interpretador_parenteses(char *s) {
 }
 
 
+void iniciar_captura_fatorial(ExpressaoFatorial *expr, int posicao) {
+    expr->capturando = true;
+    expr->inicio = posicao;
+    expr->tamanho = 0;
+}
+
+void adicionar_caractere_fatorial(ExpressaoFatorial *expr, char c) {
+    if(expr->tamanho >= MAX_FATORIAL_SIZE - 1)
+        return;
+
+    expr->expressao[expr->tamanho++] = c;
+}
+
+void resolver_expressao_fatorial(char *s, ExpressaoFatorial *expr) {
+    expr->expressao[expr->tamanho] = '\0';
+    DEBUG_LOG("resolver_expressao_fatorial: inicio=%d expressao='%s'", expr->inicio, expr->expressao);
+
+    double resultado = operador(expr->expressao);
+
+    char texto_resultado[MAX_RESULT_SIZE];
+
+    num_fmt(
+        texto_resultado,
+        sizeof(texto_resultado),
+        resultado
+    );
+
+    substituir_na_memoria(
+        s,
+        expr->inicio,
+        strlen(expr->expressao),
+        texto_resultado
+    );
+
+    DEBUG_LOG("resultado expressao fatorial: %s", texto_resultado);
+}
+
+void interpretador_fatorial(char *s) {
+    ExpressaoFatorial expr = {0};
+
+    int ultimo_operador = 0;
+    DEBUG_LOG("interpretador_fatorial: entrada='%s'", s);
+
+    for (int i = 0; s[i] != '\0'; i++) {
+        if (eh_operador(s[i])) {
+            if(s[i] == '!') {
+                if(!expr.capturando) {
+                    int inicio_operando = (ultimo_operador != 0) ? ultimo_operador + 1 : 0;
+                    iniciar_captura_fatorial(&expr, inicio_operando);
+                    i = inicio_operando;
+                } else {
+                    adicionar_caractere_fatorial(&expr, '!');
+                    resolver_expressao_fatorial(s, &expr);
+
+                    expr.capturando = false;
+
+                    i = expr.inicio;
+                }
+            } else {
+                ultimo_operador = i;
+            }
+        }
+
+        if(expr.capturando){
+            adicionar_caractere_fatorial(&expr, s[i]);}
+        }
+}
+
+
+
 bool eh_expressao_prioritaria(char operador) {
     return operador == '*' || operador == '/';
 }
@@ -296,8 +383,7 @@ void interpretador_prioritario(char *s) {
                 } else {
                     ultimo_operador = i;
                 }
-            }
-            else {
+            } else {
                 if(s[i] != '*' && s[i] != '/') {
                     resolver_expressao(s, &expr);
 
@@ -330,6 +416,11 @@ double operador(char s[MAX_SIZE]) {
 
     while(!*acabou) {
         operador = s[guarda_separador.position];
+        if(operador == '!') {
+            DEBUG_LOG("operador: operador='%c'", operador);
+            result = fatoracao(result);
+            break;
+        }
         guarda_separador = separator(s, guarda_separador.position + 1);
         DEBUG_LOG("operador: operador='%c' proximo=%.15f", operador, guarda_separador.number);
 
@@ -383,6 +474,18 @@ SeparatorReturns separator(char s[MAX_SIZE], int pos) {
     res.number = atof(buffer);
     res.acabou = true;
     return res;
+}
+
+double fatoracao(double n) {
+    long long ni = (long long)round(n);
+    if (ni < 0) {
+        printf("Fatorial indefinido para negativos\n");
+        return 0;
+    }
+    if (ni == 0 || ni == 1) return 1;
+    double resultado = 1;
+    for (long long i = 2; i <= ni; i++) resultado *= i;
+    return resultado;
 }
 
 
@@ -447,7 +550,7 @@ void substituir_na_memoria(char *str, int posicao, int tamanho_antigo, const cha
 bool eh_operador(char c) {
     switch (c) {
         case '+': case '-': case '*': case '/': 
-        case '%': 
+        case '%': case '!':
             return true;
         default:
             return false;
