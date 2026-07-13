@@ -147,6 +147,12 @@ double elevado(double n1, double n2);
         testar("(3+2)!",       120);
         testar("3!*2!",        12);
 
+        printf("\n-- Elevados --\n");
+        testar("2^3",          8);
+        testar("3^2",          9);
+        testar("2^3+1",        9);
+        testar("2^3^2",       64);
+
         printf("\n============================\n\n");
     }
 
