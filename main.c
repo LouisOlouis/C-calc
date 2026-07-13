@@ -80,6 +80,7 @@ double modu(double n1, double n2);
 double sum(double n1, double n2);
 double sub(double n1, double n2);
 
+double elevado(double n1, double n2);
 
 #ifdef TESTING_DEBUG
 
@@ -381,7 +382,7 @@ void interpretador_fatorial(char *s) {
 
 
 bool eh_expressao_prioritaria(char operador) {
-    return operador == '*' || operador == '/';
+    return operador == '*' || operador == '/' || operador == '^';
 }
 
 void resolver_expressao(char *s, ExpressaoPrioritaria *expr) {
@@ -438,7 +439,7 @@ void interpretador_prioritario(char *s) {
                     ultimo_operador = i;
                 }
             } else {
-                if(s[i] != '*' && s[i] != '/') {
+                if(s[i] != '*' && s[i] != '/' && s[i] != '^') {
                     resolver_expressao(s, &expr);
 
                     expr.capturando = false;
@@ -494,6 +495,8 @@ double operador(char *s) {
             case '%':
                 result = modu(result, guarda_separador.number);
                 break;
+            case '^':
+                result = elevado(result, guarda_separador.number);
             default:
             //operadores reconhecidos nao tratados serao tratados em atualizaçoes futuras
                 break;
@@ -542,6 +545,10 @@ double fatoracao(double n) {
     return resultado;
 }
 
+double elevado(double n1, double n2) {
+    double buffer = pow(n1, n2);
+    return buffer;
+}
 
 double sum(double n1, double n2) {
     double buffer = n1 + n2;
@@ -604,7 +611,7 @@ void substituir_na_memoria(char *str, int posicao, int tamanho_antigo, const cha
 bool eh_operador(char c) {
     switch (c) {
         case '+': case '-': case '*': case '/': 
-        case '%': case '!':
+        case '%': case '!': case '^':
             return true;
         default:
             return false;
@@ -614,7 +621,7 @@ bool eh_operador(char c) {
 bool eh_precedente_negativo(char c) {
     switch (c) {
         case '+': case '-': case '*': case '/': 
-        case '%': case '(':
+        case '%': case '(': case '^':
             return true;
         default:
             return false;
