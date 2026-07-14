@@ -1,166 +1,4 @@
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdlib.h>
-#include <math.h>
-#include <stdarg.h>
-
-// #define TESTING_DEBUG
-// #define OPERATION_DEBUG
-
-#ifdef OPERATION_DEBUG
-    #define DEBUG_LOG(...) do { printf("[DEBUG] " __VA_ARGS__); printf("\n"); } while (0)
-#else
-    #define DEBUG_LOG(...) ((void)0)
-#endif
-
-#define MAX_SIZE 100
-#define negativo '_'
-#define MAX_EXPR_SIZE 100
-#define MAX_RESULT_SIZE 40
-#define MAX_FATORIAL_SIZE 6
-#define PRECISION "%.15lf"
-#define EPSILON 1e-9
-
-typedef struct SeparatorReturns {
-    double number;
-    int position;
-    bool acabou;
-} SeparatorReturns;
-
-typedef struct ExpressaoParenteses{
-    int inicio;
-    int profundidade;
-    int tamanho;
-    char expressao[MAX_SIZE];
-    bool capturando;
-} ExpressaoParenteses;
-
-typedef struct ExpressaoPrioritaria{
-    int inicio;
-    int tamanho;
-    char expressao[MAX_EXPR_SIZE];
-    bool capturando;
-} ExpressaoPrioritaria;
-
-typedef struct ExpressaoFatorial{
-    int inicio;
-    int tamanho;
-    char expressao[MAX_FATORIAL_SIZE];
-    bool capturando;
-} ExpressaoFatorial;
-
-void substituir_na_memoria(char *str, int posicao, int tamanho_antigo, const char *texto_novo);
-void resolver_parenteses(char *s, ExpressaoParenteses *expr, int fechamento);
-void iniciar_captura_parenteses(ExpressaoParenteses *expr, int posicao);
-void adicionar_caractere_parenteses(ExpressaoParenteses *expr, char c);
-void iniciar_captura_fatorial(ExpressaoFatorial *expr, int posicao);
-void adicionar_caractere_fatorial(ExpressaoFatorial *expr, char c);
-void resolver_expressao_fatorial(char *s, ExpressaoFatorial *expr);
-void resolver_expressao(char *s, ExpressaoPrioritaria *expr);
-void iniciar_captura(ExpressaoPrioritaria *expr, int inicio);
-void adicionar_caractere(ExpressaoPrioritaria *expr, char c);
-SeparatorReturns separator(char s[MAX_SIZE], int pos);
-void num_fmt(char *buffer, size_t size, double num);
-bool eh_expressao_prioritaria(char operador);
-void interpretador_prioritario(char *s);
-void interpretador_parenteses(char *s);
-void interpretador_fatorial(char *s);
-void interpretar_negativos(char *s);
-bool eh_precedente_negativo(char c);
-double operador(char *s);
-void remover_espacos(char *s);
-double fatoracao(double n);
-bool eh_operador(char c);
-
-double mult(double n1, double n2);
-double divi(double n1, double n2);
-double modu(double n1, double n2);
-double sum(double n1, double n2);
-double sub(double n1, double n2);
-
-double elevado(double n1, double n2);
-
-#ifdef TESTING_DEBUG
-
-    void testar(char *expressao, double esperado) {
-        char s[MAX_SIZE];
-        strncpy(s, expressao, MAX_SIZE - 1);
-        s[MAX_SIZE - 1] = '\0';
-
-        remover_espacos(s);
-        interpretar_negativos(s);
-        interpretador_parenteses(s);
-        interpretador_fatorial(s);
-        interpretador_prioritario(s);
-        double resultado = operador(s);
-
-        bool passou = fabs(resultado - esperado) < EPSILON;
-
-        printf("[%s] %-20s -> obtido: %-25.15g esperado: %g\n",
-            passou ? "OK    " : "FALHOU",
-            expressao,
-            resultado,
-            esperado
-        );
-    }
-
-    void rodar_testes(void) {
-        printf("\n========== TESTES ==========\n");
-
-        printf("\n-- Basicos --\n");
-        testar("2+3",          5);
-        testar("10-4",         6);
-        testar("3*4",          12);
-        testar("10/4",         2.5);
-        testar("10%3",         1);
-
-        printf("\n-- Precedencia --\n");
-        testar("1+2*3",        7);
-        testar("2*3+1",        7);
-        testar("2*3+4*5",      26);
-        testar("10-2*3+1",     5);
-
-        printf("\n-- Parenteses --\n");
-        testar("(2+3)*4",      20);
-        testar("2*(3+4)",      14);
-        testar("(1+2)*(3+4)",  21);
-        testar("1+2*(3+4)",    15);
-
-        printf("\n-- Negativos --\n");
-        testar("-5+3",         -2);
-        testar("5*-3",         -15);
-        testar("(-3+5)*2",     4);
-        testar("-3*-3",        9);
-
-        printf("\n-- Floats --\n");
-        testar("1/2",          0.5);
-        testar("1.5*2",        3);
-        testar("10/3",         3.33333333333333);
-
-        printf("\n-- Fatorial --\n");
-        testar("5!",           120);
-        testar("0!",           1);
-        testar("3!+2",         8);
-        testar("2*3!",         12);
-        testar("(3+2)!",       120);
-        testar("3!*2!",        12);
-
-        printf("\n-- Elevados --\n");
-        testar("2^3",          8);
-        testar("3^2",          9);
-        testar("2^3+1",        9);
-        testar("2^3^2",       64);
-
-        printf("\n============================\n\n");
-    }
-
-#else
-    #define rodar_testes() ((void)0)
-#endif
-
-
+#include "includes/utils.h"
 
 int main(void) {
     char s[MAX_SIZE];
@@ -196,40 +34,12 @@ int main(void) {
 
 
 
-        char buffer[32] = {0};
+        char buffer[MAX_RESULT] = {0};
         num_fmt(buffer, sizeof(buffer), operador(s));
 
         printf("Resultado: %s\n", buffer);
     }
     return 0;
-}
-
-void num_fmt(char *buffer, size_t size, double num) {
-
-    DEBUG_LOG("Entrada recebida num_fmt: "PRECISION"\n", num);
-    snprintf(buffer, size, PRECISION, num);
-    DEBUG_LOG("buffer num_fmt: %s\n", buffer);
-
-    size_t end = strlen(buffer) - 1;
-
-    while (end > 0 && buffer[end] == '0') {
-        buffer[end--] = '\0';
-    }
-    if (end > 0 && buffer[end] == '.') {
-        buffer[end] = '\0';
-    }
-
-    DEBUG_LOG("pos while buffer num_fmt: %s\n", buffer);
-}
-
-void remover_espacos(char *s) {
-    int write = 0;
-    for (size_t i = 0; s[i] != '\0'; i++) {
-        if (s[i] != ' ') {
-            s[write++] = s[i];
-        }
-    }
-    s[write] = '\0';
 }
 
 void interpretar_negativos(char *s) {
@@ -336,7 +146,7 @@ void resolver_expressao_fatorial(char *s, ExpressaoFatorial *expr) {
 
     double resultado = operador(expr->expressao);
 
-    char texto_resultado[MAX_RESULT_SIZE];
+    char texto_resultado[MAX_RESULT];
 
     num_fmt(
         texto_resultado,
@@ -397,7 +207,7 @@ void resolver_expressao(char *s, ExpressaoPrioritaria *expr) {
 
     double resultado = operador(expr->expressao);
 
-    char texto_resultado[MAX_RESULT_SIZE];
+    char texto_resultado[MAX_RESULT];
 
     num_fmt(
         texto_resultado,
@@ -587,49 +397,4 @@ double modu(double n1, double n2) {
     }
     double buffer = fmod(n1,n2);
     return buffer;
-}
-
-
-void substituir_na_memoria(char *str, int posicao, int tamanho_antigo, const char *texto_novo) {
-    int tamanho_str = strlen(str);
-
-    if (posicao < 0 || posicao > tamanho_str)
-        return;
-
-    if (posicao + tamanho_antigo > tamanho_str)
-        return;
-
-    int tamanho_novo = strlen(texto_novo);
-    
-    char *ponto_insercao = str + posicao;
-
-    char *resto_texto = ponto_insercao + tamanho_antigo;
-    
-    if(tamanho_str - tamanho_antigo + tamanho_novo >= MAX_SIZE) {
-        printf("A nova string operada estoura o limite de 100 caracteres por operacao completa");
-        return;
-    }
-    memmove(ponto_insercao + tamanho_novo, resto_texto, strlen(resto_texto) + 1);
-
-    memcpy(ponto_insercao, texto_novo, tamanho_novo);
-}
-
-bool eh_operador(char c) {
-    switch (c) {
-        case '+': case '-': case '*': case '/': 
-        case '%': case '!': case '^':
-            return true;
-        default:
-            return false;
-    }
-}
-
-bool eh_precedente_negativo(char c) {
-    switch (c) {
-        case '+': case '-': case '*': case '/': 
-        case '%': case '(': case '^':
-            return true;
-        default:
-            return false;
-    }
 }
