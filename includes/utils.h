@@ -72,14 +72,6 @@ void remover_espacos(char *s);
 double fatoracao(double n);
 bool eh_operador(char c);
 
-double mult(double n1, double n2);
-double divi(double n1, double n2);
-double modu(double n1, double n2);
-double sum(double n1, double n2);
-double sub(double n1, double n2);
-
-double elevado(double n1, double n2);
-
 #ifdef OPERATION_DEBUG
     #define DEBUG_LOG(...) do { printf("[DEBUG] " __VA_ARGS__); printf("\n"); } while (0)
 #else
