@@ -1,6 +1,7 @@
 #include "includes/utils.h"
 #include "includes/matematica.h"
 #include "includes/interpretador.h"
+#include "includes/debug.h"
 
 int main(void) {
     char s[MAX_SIZE];

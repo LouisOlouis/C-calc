@@ -6,9 +6,11 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 endif()
 
 set(SOURCES
-    main.c 
+    main.c
     includes/utils.c
     includes/matematica.c
+    includes/interpretador.c
+    includes/debug.c
 )
 
 include_directories(includes)

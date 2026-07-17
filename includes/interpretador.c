@@ -1,4 +1,5 @@
 #include "interpretador.h"
+#include "debug.h"
 
 void interpretar_negativos(char *s) {
     for(int i = 0; s[i] != '\0'; i++) {

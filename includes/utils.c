@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "debug.h"
 
 void num_fmt(char *buffer, size_t size, double num) {
 
