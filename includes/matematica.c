@@ -1,6 +1,5 @@
 #include "matematica.h"
 
-
 double fatoracao(double n) {
     long long ni = (long long)round(n);
     if (ni < 0) {
