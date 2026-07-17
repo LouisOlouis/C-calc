@@ -52,12 +52,12 @@ double operador(char *s) {
 
     guarda_separador = separator(s, 0);
     double result = guarda_separador.number;
-    char operador;
+    char op;
     DEBUG_LOG("operador: valor inicial=%.15f", result);
 
     while(!*acabou) {
-        operador = s[guarda_separador.position];
-        if(operador == '!') {
+        op = s[guarda_separador.position];
+        if(op == '!') {
             DEBUG_LOG("operador: operador='%c'", operador);
             result = fatoracao(result);
             break;
@@ -65,7 +65,7 @@ double operador(char *s) {
         guarda_separador = separator(s, guarda_separador.position + 1);
         DEBUG_LOG("operador: operador='%c' proximo=%.15f", operador, guarda_separador.number);
 
-        switch(operador) {
+        switch(op) {
             case '+':
                 result = sum(result, guarda_separador.number);
                 break;
@@ -83,10 +83,12 @@ double operador(char *s) {
                 break;
             case '^':
                 result = elevado(result, guarda_separador.number);
+                break;
             case '~':
                 result = raiz(result, guarda_separador.number);
+                break;
             default:
-            //operadores reconhecidos nao tratados serao tratados em atualizaçoes futuras
+            printf("Operador nao reconhecido");
                 break;
         }
     }

@@ -10,8 +10,6 @@
 #include <math.h>
 #include <stdarg.h>
 
-#include "debug.h"
-
 #define MAX_SIZE 256
 #define MAX_RESULT 32
 #define negativo '_'
@@ -19,6 +17,8 @@
 #define MAX_FATORIAL_SIZE 3
 #define PRECISION "%.15lf"
 #define EPSILON 1e-9
+
+#include "debug.h"
 
 typedef struct SeparatorReturns {
     double number;
