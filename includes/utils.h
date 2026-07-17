@@ -28,7 +28,7 @@ typedef struct SeparatorReturns {
 
 
 void substituir_na_memoria(char *str, size_t posicao, size_t tamanho_antigo, const char *texto_novo);
-SeparatorReturns separator(char s[MAX_SIZE], int pos);
+void separator(char *s, SeparatorReturns *expr, int pos);
 void num_fmt(char *buffer, size_t size, double num);
 bool eh_precedente_negativo(char c);
 double operador(char *s);

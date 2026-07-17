@@ -45,47 +45,47 @@ int main(void) {
 }
 
 double operador(char *s) {
-    SeparatorReturns guarda_separador;
+    SeparatorReturns expr;
 
-    bool *acabou = &guarda_separador.acabou;
+    bool *acabou = &expr.acabou;
     *acabou = false;
 
-    guarda_separador = separator(s, 0);
-    double result = guarda_separador.number;
+    separator(s, &expr, 0);
+    double result = expr.number;
     char op;
     DEBUG_LOG("operador: valor inicial=%.15f", result);
 
     while(!*acabou) {
-        op = s[guarda_separador.position];
+        op = s[expr.position];
         if(op == '!') {
-            DEBUG_LOG("operador: operador='%c'", operador);
+            DEBUG_LOG("operador: operador='%c'", op);
             result = fatoracao(result);
             break;
         }
-        guarda_separador = separator(s, guarda_separador.position + 1);
-        DEBUG_LOG("operador: operador='%c' proximo=%.15f", operador, guarda_separador.number);
+        separator(s, &expr, expr.position + 1);
+        DEBUG_LOG("operador: operador='%c' proximo=%.15f", op, expr.number);
 
         switch(op) {
             case '+':
-                result = sum(result, guarda_separador.number);
+                result = sum(result, expr.number);
                 break;
             case '-':
-                result = sub(result, guarda_separador.number);
+                result = sub(result, expr.number);
                 break;
             case '*':
-                result = mult(result, guarda_separador.number);
+                result = mult(result, expr.number);
                 break;
             case '/':
-                result = divi(result, guarda_separador.number);
+                result = divi(result, expr.number);
                 break;
             case '%':
-                result = modu(result, guarda_separador.number);
+                result = modu(result, expr.number);
                 break;
             case '^':
-                result = elevado(result, guarda_separador.number);
+                result = elevado(result, expr.number);
                 break;
             case '~':
-                result = raiz(result, guarda_separador.number);
+                result = raiz(result, expr.number);
                 break;
             default:
             printf("Operador nao reconhecido");
@@ -98,28 +98,34 @@ double operador(char *s) {
 }
 
 
-SeparatorReturns separator(char s[MAX_SIZE], int pos) {
-    SeparatorReturns res = {0};
-    char buffer[MAX_SIZE] = "";
+void separator(char *s, SeparatorReturns *expr, int pos) {
+    char buffer[MAX_SIZE] = {0};
     int j = 0;
 
+    expr->acabou = false;
+    expr->position = -1;
+
     DEBUG_LOG("separator: pos=%d", pos);
-    for (res.position = pos; s[res.position] != '\0'; res.position++) {
-        if (isdigit(s[res.position]) || s[res.position] == '.') {
-            buffer[j] = s[res.position];
-            j++;
-        } else if (eh_operador(s[res.position])) {
+    for (int i = pos; s[i] != '\0'; i++) {
+        if (isdigit((unsigned char)s[i]) || s[i] == '.') {
+            if (j < MAX_SIZE - 1) {
+                buffer[j++] = s[i];
+            }
+        } else if (eh_operador(s[i])) {
             buffer[j] = '\0';
-            res.number = atof(buffer);
-            return res;
-        } else if(s[res.position] == negativo){
-            buffer[j] = '-';
-            j++;
+            expr->number = atof(buffer);
+            expr->position = i;
+            return;
+        } else if (s[i] == negativo) {
+            if (j < MAX_SIZE - 1) {
+                buffer[j++] = '-';
+            }
         }
     }
+
     buffer[j] = '\0';
-    res.number = atof(buffer);
-    res.acabou = true;
-    return res;
+    expr->number = atof(buffer);
+    expr->acabou = true;
+    return;
 }
 
