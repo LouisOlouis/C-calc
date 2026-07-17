@@ -157,7 +157,7 @@ void interpretador_fatorial(char *s) {
 
 // prioritario
 bool eh_expressao_prioritaria(char operador) {
-    return operador == '*' || operador == '/' || operador == '^';
+    return operador == '*' || operador == '/' || operador == '^' || operador == '~';
 }
 
 void resolver_expressao(char *s, ExpressaoPrioritaria *expr) {
@@ -214,7 +214,7 @@ void interpretador_prioritario(char *s) {
                     ultimo_operador = i;
                 }
             } else {
-                if(s[i] != '*' && s[i] != '/' && s[i] != '^') {
+                if(s[i] != '*' && s[i] != '/' && s[i] != '^' && s[i] != '~') {
                     resolver_expressao(s, &expr);
 
                     expr.capturando = false;

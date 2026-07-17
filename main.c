@@ -83,6 +83,8 @@ double operador(char *s) {
                 break;
             case '^':
                 result = elevado(result, guarda_separador.number);
+            case '~':
+                result = raiz(result, guarda_separador.number);
             default:
             //operadores reconhecidos nao tratados serao tratados em atualizaçoes futuras
                 break;

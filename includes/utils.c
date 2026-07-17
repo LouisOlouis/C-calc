@@ -55,7 +55,7 @@ void substituir_na_memoria(char *str, size_t posicao, size_t tamanho_antigo, con
 bool eh_operador(char c) {
     switch (c) {
         case '+': case '-': case '*': case '/': 
-        case '%': case '!': case '^':
+        case '%': case '!': case '^': case '~':
             return true;
         default:
             return false;
@@ -65,7 +65,7 @@ bool eh_operador(char c) {
 bool eh_precedente_negativo(char c) {
     switch (c) {
         case '+': case '-': case '*': case '/': 
-        case '%': case '(': case '^':
+        case '%': case '(': case '^': case '~':
             return true;
         default:
             return false;

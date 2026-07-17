@@ -17,6 +17,11 @@ double elevado(double n1, double n2) {
     return buffer;
 }
 
+double raiz(double n1, double n2) {
+    double buffer = pow(n1, 1.0 / n2);
+    return buffer;
+}
+
 double sum(double n1, double n2) {
     double buffer = n1 + n2;
     return buffer;

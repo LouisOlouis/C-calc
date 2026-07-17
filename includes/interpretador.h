@@ -44,4 +44,7 @@ void interpretador_prioritario(char *s);
 
 
 void interpretar_negativos(char *s);
+#ifdef __cplusplus
+}
+#endif
 #endif
