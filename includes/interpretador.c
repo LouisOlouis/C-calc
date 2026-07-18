@@ -30,8 +30,20 @@ void adicionar_caractere_parenteses(ExpressaoParenteses *expr, char c) {
 
 void resolver_parenteses(char *s, ExpressaoParenteses *expr, int fechamento, Erro *erro) {
     DEBUG_LOG("resolver_parenteses: inicio=%d fechamento=%d profundidade=%d expressao='%s'", expr->inicio, fechamento, expr->profundidade, expr->expressao);
+    if (erro != NULL && erro->tipo != ERRO_NENHUM) {
+        return;
+    }
+
     interpretador_parenteses(expr->expressao, erro);
+    if (erro != NULL && erro->tipo != ERRO_NENHUM) {
+        return;
+    }
+
     interpretador_fatorial(expr->expressao, erro);
+    if (erro != NULL && erro->tipo != ERRO_NENHUM) {
+        return;
+    }
+
     interpretador_prioritario(expr->expressao, erro);
 
     if (erro != NULL && erro->tipo != ERRO_NENHUM) {
@@ -66,6 +78,10 @@ void resolver_parenteses(char *s, ExpressaoParenteses *expr, int fechamento, Err
 
 void interpretador_parenteses(char *s, Erro *erro) {
     ExpressaoParenteses expr = {0};
+
+    if (erro != NULL && erro->tipo != ERRO_NENHUM) {
+        return;
+    }
 
     for (int i = 0; s[i] != '\0'; i++) {
         if (!expr.capturando) {
@@ -143,6 +159,10 @@ void resolver_expressao_fatorial(char *s, ExpressaoFatorial *expr, Erro *erro) {
 void interpretador_fatorial(char *s, Erro *erro) {
     ExpressaoFatorial expr = {0};
 
+    if (erro != NULL && erro->tipo != ERRO_NENHUM) {
+        return;
+    }
+
     int ultimo_operador = 0;
     DEBUG_LOG("interpretador_fatorial: entrada='%s'", s);
 
@@ -158,8 +178,7 @@ void interpretador_fatorial(char *s, Erro *erro) {
                     resolver_expressao_fatorial(s, &expr, erro);
 
                     expr.capturando = false;
-
-                    i = expr.inicio;
+                    continue;
                 }
             } else {
                 ultimo_operador = i;
@@ -225,6 +244,10 @@ void adicionar_caractere(ExpressaoPrioritaria *expr, char c) {
 void interpretador_prioritario(char *s, Erro *erro) {
     ExpressaoPrioritaria expr = {0};
 
+    if (erro != NULL && erro->tipo != ERRO_NENHUM) {
+        return;
+    }
+
     int ultimo_operador = 0;
     DEBUG_LOG("interpretador_prioritario: entrada='%s'", s);
 
@@ -243,8 +266,7 @@ void interpretador_prioritario(char *s, Erro *erro) {
                     resolver_expressao(s, &expr, erro);
 
                     expr.capturando = false;
-
-                    i = expr.inicio;
+                    continue;
                 }
             }
         }

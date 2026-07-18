@@ -60,10 +60,6 @@ int main(void) {
 double operador(char *s, Erro *erro) {
     SeparatorReturns expr;
 
-    if (erro != NULL) {
-        limpa_erro(erro);
-    }
-
     bool *acabou = &expr.acabou;
     *acabou = false;
 

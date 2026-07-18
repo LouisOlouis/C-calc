@@ -45,7 +45,7 @@ void remover_espacos(char *s) {
 void substituir_na_memoria(char *str, size_t posicao, size_t tamanho_antigo, const char *texto_novo) {
     size_t tamanho_str = strlen(str);
 
-    if (posicao < 0 || posicao > tamanho_str)
+    if (posicao > tamanho_str)
         return;
 
     if (posicao + tamanho_antigo > tamanho_str)
