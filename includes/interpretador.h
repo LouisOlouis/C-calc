@@ -27,19 +27,19 @@ typedef struct ExpressaoParenteses{
 
 void iniciar_captura_parenteses(ExpressaoParenteses *expr, int posicao);
 void adicionar_caractere_parenteses(ExpressaoParenteses *expr, char c);
-void resolver_parenteses(char *s, ExpressaoParenteses *expr, int fechamento);
-void interpretador_parenteses(char *s);
+void resolver_parenteses(char *s, ExpressaoParenteses *expr, int fechamento, Erro *erro);
+void interpretador_parenteses(char *s, Erro *erro);
 
 void iniciar_captura_fatorial(ExpressaoFatorial *expr, int posicao);
 void adicionar_caractere_fatorial(ExpressaoFatorial *expr, char c);
-void resolver_expressao_fatorial(char *s, ExpressaoFatorial *expr);
-void interpretador_fatorial(char *s);
+void resolver_expressao_fatorial(char *s, ExpressaoFatorial *expr, Erro *erro);
+void interpretador_fatorial(char *s, Erro *erro);
 
 bool eh_expressao_prioritaria(char operador);
 void iniciar_captura(ExpressaoPrioritaria *expr, int inicio);
 void adicionar_caractere(ExpressaoPrioritaria *expr, char c);
-void resolver_expressao(char *s, ExpressaoPrioritaria *expr);
-void interpretador_prioritario(char *s);
+void resolver_expressao(char *s, ExpressaoPrioritaria *expr, Erro *erro);
+void interpretador_prioritario(char *s, Erro *erro);
 
 
 

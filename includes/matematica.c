@@ -1,9 +1,11 @@
 #include "matematica.h"
 
-double fatoracao(double n) {
+double fatoracao(double n, Erro *erro) {
     long long ni = (long long)round(n);
     if (ni < 0) {
-        printf("Fatorial indefinido para negativos\n");
+        if (erro != NULL) {
+            seta_erro(erro, ERRO_FATORIAL_NEGATIVO, "fatorial indefinido para negativos");
+        }
         return 0;
     }
     if (ni == 0 || ni == 1) return 1;
@@ -37,18 +39,22 @@ double mult(double n1, double n2) {
     return buffer;
 }
 
-double divi(double n1, double n2) {
+double divi(double n1, double n2, Erro *erro) {
     if(fabs(n2) < EPSILON) {
-        printf("Impossivel dividir por 0\n");
+        if (erro != NULL) {
+            seta_erro(erro, ERRO_DIV_ZERO, "impossivel dividir por zero");
+        }
         return 0;
     }
     double buffer = n1 / n2;
     return buffer;
 }
 
-double modu(double n1, double n2) {
+double modu(double n1, double n2, Erro *erro) {
     if(fabs(n2) < EPSILON) {
-        printf("Impossivel dividir por 0\n");
+        if (erro != NULL) {
+            seta_erro(erro, ERRO_DIV_ZERO, "impossivel dividir por zero");
+        }
         return 0;
     }
     double buffer = fmod(n1,n2);

@@ -5,8 +5,8 @@
 
 double elevado(double n1, double n2);
 double mult(double n1, double n2);
-double divi(double n1, double n2);
-double modu(double n1, double n2);
+double divi(double n1, double n2, Erro *erro);
+double modu(double n1, double n2, Erro *erro);
 double sum(double n1, double n2);
 double sub(double n1, double n2);
 

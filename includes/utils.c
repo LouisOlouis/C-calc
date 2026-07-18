@@ -1,6 +1,19 @@
 #include "utils.h"
 #include "debug.h"
 
+void limpa_erro(Erro *e) {
+    e->tipo = ERRO_NENHUM;
+    e->detalhe[0] = '\0';
+}
+
+void seta_erro(Erro *e, TipoErro tipo, const char *fmt, ...) {
+    e->tipo = tipo;
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(e->detalhe, sizeof(e->detalhe), fmt, args);
+    va_end(args);
+}
+
 void num_fmt(char *buffer, size_t size, double num) {
 
     DEBUG_LOG("Entrada recebida num_fmt: "PRECISION"\n", num);

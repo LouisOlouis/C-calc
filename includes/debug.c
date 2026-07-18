@@ -7,12 +7,14 @@ void testar(char *expressao, double esperado) {
     strncpy(s, expressao, MAX_SIZE - 1);
     s[MAX_SIZE - 1] = '\0';
 
+    Erro erro = {0};
+
     remover_espacos(s);
     interpretar_negativos(s);
-    interpretador_parenteses(s);
-    interpretador_fatorial(s);
-    interpretador_prioritario(s);
-    double resultado = operador(s);
+    interpretador_parenteses(s, &erro);
+    interpretador_fatorial(s, &erro);
+    interpretador_prioritario(s, &erro);
+    double resultado = operador(s, &erro);
 
     bool passou = fabs(resultado - esperado) < EPSILON;
 

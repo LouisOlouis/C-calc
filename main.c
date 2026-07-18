@@ -5,6 +5,7 @@
 
 int main(void) {
     char s[MAX_SIZE];
+    Erro erro = {0};
 
     rodar_testes();
 
@@ -20,50 +21,82 @@ int main(void) {
         s[strcspn(s, "\n")] = '\0';
         DEBUG_LOG("Entrada recebida: %s", s);
 
+        limpa_erro(&erro);
         remover_espacos(s);
         DEBUG_LOG("Depois de remover espacos: %s", s);
 
         interpretar_negativos(s);
         DEBUG_LOG("Depois de interpretar negativos: %s", s);
 
-        interpretador_parenteses(s);
+        interpretador_parenteses(s, &erro);
         DEBUG_LOG("Depois de resolver parenteses: %s", s);
 
-        interpretador_fatorial(s);
+        interpretador_fatorial(s, &erro);
         DEBUG_LOG("Depois de resolver fatoriais: %s",s);
 
-        interpretador_prioritario(s);
+        interpretador_prioritario(s, &erro);
         DEBUG_LOG("Depois de resolver prioridades: %s", s);
 
 
 
+        if (erro.tipo != ERRO_NENHUM) {
+            printf("Erro: %s\n", erro.detalhe);
+            continue;
+        }
+
         char buffer[MAX_RESULT] = {0};
-        num_fmt(buffer, sizeof(buffer), operador(s));
+        num_fmt(buffer, sizeof(buffer), operador(s, &erro));
+
+        if (erro.tipo != ERRO_NENHUM) {
+            printf("Erro: %s\n", erro.detalhe);
+            continue;
+        }
 
         printf("Resultado: %s\n", buffer);
     }
     return 0;
 }
 
-double operador(char *s) {
+double operador(char *s, Erro *erro) {
     SeparatorReturns expr;
+
+    if (erro != NULL) {
+        limpa_erro(erro);
+    }
 
     bool *acabou = &expr.acabou;
     *acabou = false;
 
-    separator(s, &expr, 0);
+    separator(s, &expr, 0, erro);
+    if (erro != NULL && erro->tipo != ERRO_NENHUM) {
+        return 0.0;
+    }
+
     double result = expr.number;
     char op;
     DEBUG_LOG("operador: valor inicial=%.15f", result);
 
     while(!*acabou) {
+        if (expr.position < 0 || expr.position >= (int)strlen(s)) {
+            if (erro != NULL) {
+                seta_erro(erro, ERRO_SINTAXE, "expressao incompleta");
+            }
+            return 0.0;
+        }
+
         op = s[expr.position];
         if(op == '!') {
             DEBUG_LOG("operador: operador='%c'", op);
-            result = fatoracao(result);
+            result = fatoracao(result, erro);
+            if (erro != NULL && erro->tipo != ERRO_NENHUM) {
+                return 0.0;
+            }
             break;
         }
-        separator(s, &expr, expr.position + 1);
+        separator(s, &expr, expr.position + 1, erro);
+        if (erro != NULL && erro->tipo != ERRO_NENHUM) {
+            return 0.0;
+        }
         DEBUG_LOG("operador: operador='%c' proximo=%.15f", op, expr.number);
 
         switch(op) {
@@ -77,10 +110,10 @@ double operador(char *s) {
                 result = mult(result, expr.number);
                 break;
             case '/':
-                result = divi(result, expr.number);
+                result = divi(result, expr.number, erro);
                 break;
             case '%':
-                result = modu(result, expr.number);
+                result = modu(result, expr.number, erro);
                 break;
             case '^':
                 result = elevado(result, expr.number);
@@ -89,7 +122,9 @@ double operador(char *s) {
                 result = raiz(result, expr.number);
                 break;
             default:
-            printf("Operador nao reconhecido");
+                if (erro != NULL) {
+                    seta_erro(erro, ERRO_SINTAXE, "operador nao reconhecido");
+                }
                 break;
         }
     }
@@ -99,7 +134,7 @@ double operador(char *s) {
 }
 
 
-void separator(char *s, SeparatorReturns *expr, int pos) {
+void separator(char *s, SeparatorReturns *expr, int pos, Erro *erro) {
     char buffer[MAX_SIZE] = {0};
     int j = 0;
 
@@ -121,6 +156,11 @@ void separator(char *s, SeparatorReturns *expr, int pos) {
             if (j < MAX_SIZE - 1) {
                 buffer[j++] = '-';
             }
+        } else if (s[i] != ' ') {
+            if (erro != NULL) {
+                seta_erro(erro, ERRO_SINTAXE, "caractere invalido: %c", s[i]);
+            }
+            return;
         }
     }
 

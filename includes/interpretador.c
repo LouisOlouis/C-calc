@@ -28,13 +28,21 @@ void adicionar_caractere_parenteses(ExpressaoParenteses *expr, char c) {
     expr->expressao[expr->tamanho] = '\0';
 }
 
-void resolver_parenteses(char *s, ExpressaoParenteses *expr, int fechamento) {
+void resolver_parenteses(char *s, ExpressaoParenteses *expr, int fechamento, Erro *erro) {
     DEBUG_LOG("resolver_parenteses: inicio=%d fechamento=%d profundidade=%d expressao='%s'", expr->inicio, fechamento, expr->profundidade, expr->expressao);
-    interpretador_parenteses(expr->expressao);
-    interpretador_fatorial(expr->expressao);
-    interpretador_prioritario(expr->expressao);
+    interpretador_parenteses(expr->expressao, erro);
+    interpretador_fatorial(expr->expressao, erro);
+    interpretador_prioritario(expr->expressao, erro);
 
-    double resultado = operador(expr->expressao);
+    if (erro != NULL && erro->tipo != ERRO_NENHUM) {
+        return;
+    }
+
+    double resultado = operador(expr->expressao, erro);
+
+    if (erro != NULL && erro->tipo != ERRO_NENHUM) {
+        return;
+    }
 
     char resultado_str[20];
 
@@ -56,7 +64,7 @@ void resolver_parenteses(char *s, ExpressaoParenteses *expr, int fechamento) {
 }
 
 
-void interpretador_parenteses(char *s) {
+void interpretador_parenteses(char *s, Erro *erro) {
     ExpressaoParenteses expr = {0};
 
     for (int i = 0; s[i] != '\0'; i++) {
@@ -73,7 +81,7 @@ void interpretador_parenteses(char *s) {
                 expr.profundidade--;
 
                 if (expr.profundidade == 0) {
-                    resolver_parenteses(s, &expr, i);
+                    resolver_parenteses(s, &expr, i, erro);
                     i = expr.inicio - 1;
                 }
                 else {
@@ -100,11 +108,19 @@ void adicionar_caractere_fatorial(ExpressaoFatorial *expr, char c) {
     expr->expressao[expr->tamanho++] = c;
 }
 
-void resolver_expressao_fatorial(char *s, ExpressaoFatorial *expr) {
+void resolver_expressao_fatorial(char *s, ExpressaoFatorial *expr, Erro *erro) {
     expr->expressao[expr->tamanho] = '\0';
     DEBUG_LOG("resolver_expressao_fatorial: inicio=%d expressao='%s'", expr->inicio, expr->expressao);
 
-    double resultado = operador(expr->expressao);
+    if (erro != NULL && erro->tipo != ERRO_NENHUM) {
+        return;
+    }
+
+    double resultado = operador(expr->expressao, erro);
+
+    if (erro != NULL && erro->tipo != ERRO_NENHUM) {
+        return;
+    }
 
     char texto_resultado[MAX_RESULT];
 
@@ -124,7 +140,7 @@ void resolver_expressao_fatorial(char *s, ExpressaoFatorial *expr) {
     DEBUG_LOG("resultado expressao fatorial: %s", texto_resultado);
 }
 
-void interpretador_fatorial(char *s) {
+void interpretador_fatorial(char *s, Erro *erro) {
     ExpressaoFatorial expr = {0};
 
     int ultimo_operador = 0;
@@ -139,7 +155,7 @@ void interpretador_fatorial(char *s) {
                     i = inicio_operando;
                 } else {
                     adicionar_caractere_fatorial(&expr, '!');
-                    resolver_expressao_fatorial(s, &expr);
+                    resolver_expressao_fatorial(s, &expr, erro);
 
                     expr.capturando = false;
 
@@ -161,11 +177,19 @@ bool eh_expressao_prioritaria(char operador) {
     return operador == '*' || operador == '/' || operador == '^' || operador == '~';
 }
 
-void resolver_expressao(char *s, ExpressaoPrioritaria *expr) {
+void resolver_expressao(char *s, ExpressaoPrioritaria *expr, Erro *erro) {
     expr->expressao[expr->tamanho] = '\0';
     DEBUG_LOG("resolver_expressao: inicio=%d expressao='%s'", expr->inicio, expr->expressao);
 
-    double resultado = operador(expr->expressao);
+    if (erro != NULL && erro->tipo != ERRO_NENHUM) {
+        return;
+    }
+
+    double resultado = operador(expr->expressao, erro);
+
+    if (erro != NULL && erro->tipo != ERRO_NENHUM) {
+        return;
+    }
 
     char texto_resultado[MAX_RESULT];
 
@@ -198,7 +222,7 @@ void adicionar_caractere(ExpressaoPrioritaria *expr, char c) {
     expr->expressao[expr->tamanho++] = c;
 }
 
-void interpretador_prioritario(char *s) {
+void interpretador_prioritario(char *s, Erro *erro) {
     ExpressaoPrioritaria expr = {0};
 
     int ultimo_operador = 0;
@@ -216,7 +240,7 @@ void interpretador_prioritario(char *s) {
                 }
             } else {
                 if(s[i] != '*' && s[i] != '/' && s[i] != '^' && s[i] != '~') {
-                    resolver_expressao(s, &expr);
+                    resolver_expressao(s, &expr, erro);
 
                     expr.capturando = false;
 
@@ -229,6 +253,6 @@ void interpretador_prioritario(char *s) {
             adicionar_caractere(&expr, s[i]);}
     }
     if (expr.capturando) {
-        resolver_expressao(s, &expr);
+        resolver_expressao(s, &expr, erro);
     }
 }
