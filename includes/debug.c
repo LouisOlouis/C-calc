@@ -1,6 +1,6 @@
+#include "debug.h"
 
 #ifdef TESTING_DEBUG
-#include "debug.h"
 
 void testar(char *expressao, double esperado) {
     char s[MAX_SIZE];
@@ -23,6 +23,30 @@ void testar(char *expressao, double esperado) {
         expressao,
         resultado,
         esperado
+    );
+}
+
+void testar_erro(char *expressao, TipoErro esperado) {
+    char s[MAX_SIZE];
+    strncpy(s, expressao, MAX_SIZE - 1);
+    s[MAX_SIZE - 1] = '\0';
+
+    Erro erro = {0};
+
+    remover_espacos(s);
+    interpretar_negativos(s);
+    interpretador_parenteses(s, &erro);
+    interpretador_fatorial(s, &erro);
+    interpretador_prioritario(s, &erro);
+    (void)operador(s, &erro);
+
+    bool passou = erro.tipo == esperado;
+
+    printf("[%s] %-20s -> erro esperado: %d obtido: %d\n",
+        passou ? "OK    " : "FALHOU",
+        expressao,
+        esperado,
+        erro.tipo
     );
 }
 
@@ -72,6 +96,16 @@ void rodar_testes(void) {
     testar("3^2",          9);
     testar("2^3+1",        9);
     testar("2^3^2",       64);
+
+    printf("\n-- Raizes --\n");
+    testar("8~3",          2);
+    testar("16~2",         4);
+
+    printf("\n-- Forcar erros --\n");
+    testar_erro("1/0", ERRO_DIV_ZERO);
+    testar_erro("-1!", ERRO_FATORIAL_NEGATIVO);
+    testar_erro("1a+2", ERRO_SINTAXE);
+    testar_erro("1@2", ERRO_SINTAXE);
 
     printf("\n============================\n\n");
 }
